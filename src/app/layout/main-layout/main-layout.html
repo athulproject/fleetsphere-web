@@ -1,0 +1,62 @@
+<div class="min-h-screen bg-blue-50 flex flex-col text-gray-900">
+  <div class="flex-1">
+    <app-sidebar [basePath]="'/dashboard'" [isCollapsed]="isCollapsed()" [isMobileOpen]="isMobileOpen()" [isMobile]="isMobile()"
+      [openMenu]="openMenu()" (toggle)="handleToggle()" (mobileOpenChange)="setIsMobileOpen($event)"
+      (openMenuChange)="setOpenMenu($event)" (logout)="handleLogout()" />
+
+    <div class="flex-1 flex flex-col transition-all duration-300"
+      [ngClass]="isMobile() ? 'ml-0' : (isCollapsed() ? 'ml-20' : 'ml-64')">
+      <div class="hidden lg:block sticky top-0 z-30 bg-white border-b border-gray-300">
+        <app-topheader [openMenu]="openMenu()" [notifCount]="unreadCount()" (openMenuChange)="setOpenMenu($event)"
+          (openNotifications)="setNotifOpen(true)" />
+      </div>
+
+      <main class="flex-1 p-6 max-h-[calc(100vh-64px)] overflow-y-auto scrollbar">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+
+  @if (notifOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" (click)="setNotifOpen(false)">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-gray-900 text-lg">Notifications</h3>
+          <span class="px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+            {{ unreadCount() }} new
+          </span>
+        </div>
+        <button (click)="setNotifOpen(false)"
+          class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" type="button">
+          ✕
+        </button>
+      </div>
+      <div class="py-4 space-y-3">
+        <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-sm">
+          <p class="font-semibold text-blue-900">Quarterly review submitted</p>
+          <p class="text-xs text-blue-700 mt-1">Your HR quarterly review has been processed.</p>
+          <span class="text-[10px] text-blue-500 mt-2 block">10 minutes ago</span>
+        </div>
+        <div class="p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm">
+          <p class="font-semibold text-gray-800">New company policy update</p>
+          <p class="text-xs text-gray-600 mt-1">Please review the updated remote work guidelines.</p>
+          <span class="text-[10px] text-gray-400 mt-2 block">2 hours ago</span>
+        </div>
+        <div class="p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm">
+          <p class="font-semibold text-gray-800">Payroll slip generated</p>
+          <p class="text-xs text-gray-600 mt-1">Monthly payslip for October is ready for download.</p>
+          <span class="text-[10px] text-gray-400 mt-2 block">Yesterday</span>
+        </div>
+      </div>
+      <div class="pt-2 border-t border-gray-100 flex justify-end">
+        <button (click)="setNotifOpen(false)"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition"
+          type="button">
+          Mark all as read
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+</div>
