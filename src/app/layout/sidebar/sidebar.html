@@ -24,7 +24,7 @@
 <div
   class="fixed top-0 left-0 h-full bg-white border-r border-gray-300 shadow-md z-40 transition-all duration-300 lg:translate-x-0"
   [ngClass]="[ isMobileOpen() ? 'translate-x-0' : '-translate-x-full', (isCollapsed() && !isMobile()) ? 'w-20' : 'w-64']">
-  <div class="flex items-center justify-between p-4 border-b border-gray-300" style="padding-bottom: 10px;">
+  <div class="flex items-center justify-between p-4 border-b border-gray-300" [style.padding-bottom]="isCollapsed() ? '10px' : '4px'">
     <div class="flex items-center cursor-pointer ml-1" [ngClass]="isCollapsed() ? 'w-8 h-8 justify-center' : ''" (mouseenter)="isLogoHovered.set(true)"
       (mouseleave)="isLogoHovered.set(false)" (click)="isCollapsed() ? handleToggle() : null">
       @if (isCollapsed()) {
