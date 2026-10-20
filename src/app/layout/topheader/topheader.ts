@@ -18,6 +18,7 @@ import {
   LucideBell,
   LucideX
 } from '@lucide/angular';
+import { AuthService } from '../../core/services/auth.service';
 
 export interface SearchResultItem {
   id: string | number;
@@ -42,6 +43,7 @@ export interface SearchResultItem {
 export class Topheader {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
+  public authService = inject(AuthService);
 
   openMenu = input<boolean>(false);
   notifCount = input<number>(0);

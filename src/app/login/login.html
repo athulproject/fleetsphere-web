@@ -12,7 +12,7 @@
 
         <div class="relative z-10 flex items-center gap-3">
             <div
-                class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                class="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                 <svg lucideTruck class="w-6 h-6" />
             </div>
             <span class="text-2xl font-bold tracking-tight text-white">
@@ -51,14 +51,14 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-5">
-                    <div class="bg-white/[0.03] border border-white/5 rounded-xl p-3.5">
+                    <div class="bg-white/[0.03] border border-white/5 rounded-md p-3.5">
                         <span class="text-xs text-slate-400 block mb-1">Shipments</span>
                         <strong class="text-2xl font-bold text-white block">1,284</strong>
                         <small class="text-emerald-400 text-xs font-semibold flex items-center gap-1 mt-1">
                             <span>↗</span> 8.2% vs yesterday
                         </small>
                     </div>
-                    <div class="bg-white/[0.03] border border-white/5 rounded-xl p-3.5">
+                    <div class="bg-white/[0.03] border border-white/5 rounded-md p-3.5">
                         <span class="text-xs text-slate-400 block mb-1">On-time rate</span>
                         <strong class="text-2xl font-bold text-white block">96.8%</strong>
                         <small class="text-sky-400 text-xs font-medium block mt-1">+2.4% this week</small>
@@ -120,7 +120,7 @@
         <div class="w-full max-w-md mx-auto my-auto py-6">
             <div class="lg:hidden flex items-center gap-2.5 mb-8">
                 <div
-                    class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    class="w-9 h-9 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
                     <svg lucideTruck class="w-5 h-5" />
                 </div>
                 <span class="text-xl font-bold tracking-tight text-slate-900">
@@ -144,8 +144,8 @@
                     <div class="relative flex items-center">
                         <svg lucideBuilding class="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
                         <input id="company-code" name="companyCode" [(ngModel)]="companyCode"
-                            autocomplete="organization" placeholder="e.g. NORTHSTAR" required
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
+                            autocomplete="organization" placeholder="e.g. CLIENTA" required
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-md border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@
                         <svg lucideUser class="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
                         <input id="email" name="email" [(ngModel)]="email" autocomplete="username"
                             placeholder="name@company.com" required
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-md border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
                     </div>
                 </div>
 
@@ -179,15 +179,13 @@
                         <input id="password" name="password" [(ngModel)]="password"
                             [type]="showPassword ? 'text' : 'password'" autocomplete="current-password"
                             placeholder="Enter your password" required
-                            class="w-full pl-10 pr-20 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
+                            class="w-full pl-10 pr-20 py-2.5 bg-slate-50 hover:bg-slate-50/80 focus:bg-white text-slate-900 placeholder-slate-400 text-sm rounded-md border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all" />
                         <button type="button" (click)="togglePassword()"
-                            class="absolute right-2 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-200/60 hover:bg-slate-200 rounded-lg flex items-center gap-1 transition cursor-pointer">
+                            class="absolute right-2 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-800 gap-1 transition cursor-pointer">
                             @if (showPassword) {
                             <svg lucideEyeOff class="w-3.5 h-3.5" />
-                            <span>Hide</span>
                             } @else {
                             <svg lucideEye class="w-3.5 h-3.5" />
-                            <span>Show</span>
                             }
                         </button>
                     </div>
@@ -207,7 +205,7 @@
 
                 @if (loginError) {
                 <div
-                    class="flex items-center gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+                    class="flex items-center gap-2.5 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-xs">
                     <svg lucideCircleAlert class="w-4 h-4 flex-shrink-0 text-red-500" />
                     <span>{{ loginError }}</span>
                 </div>
@@ -215,7 +213,7 @@
 
                 @if (toastMessage) {
                 <div
-                    class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs flex items-center justify-between">
+                    class="p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-xs flex items-center justify-between">
                     <span>{{ toastMessage }}</span>
                     <button type="button" (click)="toastMessage = ''"
                         class="text-blue-500 hover:text-blue-700 text-sm font-bold ml-2">×</button>
@@ -223,7 +221,7 @@
                 }
 
                 <button type="submit" [disabled]="isSigningIn"
-                    class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/35 transition cursor-pointer">
+                    class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-md font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/35 transition cursor-pointer">
                     @if (isSigningIn) {
                     <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
