@@ -26,6 +26,8 @@ import {
   LucideTruck
 } from '@lucide/angular';
 
+import { AuthService } from '../../core/services/auth.service';
+
 export interface MenuItem {
   sub_menu_id?: number | string;
   sub_menu_name: string;
@@ -60,6 +62,7 @@ export interface MenuItem {
 })
 export class Sidebar {
   private router = inject(Router);
+  public authService = inject(AuthService);
 
   isCollapsed = input<boolean>(false);
   isMobileOpen = input<boolean>(false);

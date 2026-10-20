@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,8 +11,9 @@ import {
   LucideArrowRight,
   LucideTruck,
   LucideShieldCheck,
-  LucideCircleAlert
+  LucideCircleAlert,
 } from '@lucide/angular';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -28,22 +29,30 @@ import {
     LucideArrowRight,
     LucideTruck,
     LucideShieldCheck,
-    LucideCircleAlert
+    LucideCircleAlert,
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class Login implements OnInit {
   private router = inject(Router);
+  private authService = inject(AuthService);
 
-  companyCode = 'NORTHSTAR';
-  email = 'admin@fleetsphere.com';
-  password = '••••••••';
+  companyCode = 'CLIENTA';
+  email = 'admin@client001.com';
+  password = 'Admin@123';
   rememberMe = true;
   showPassword = false;
   isSigningIn = false;
   loginError = '';
   toastMessage = '';
+
+  ngOnInit(): void {
+    // If already authenticated, redirect to dashboard
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -61,14 +70,36 @@ export class Login {
   signIn(): void {
     this.loginError = '';
     if (!this.companyCode.trim() || !this.email.trim() || !this.password.trim()) {
-      this.loginError = 'Please fill in all required fields.';
+      this.loginError = 'Please fill in all required fields (Company Code, Email, and Password).';
       return;
     }
 
     this.isSigningIn = true;
-    setTimeout(() => {
-      this.isSigningIn = false;
-      this.router.navigate(['/dashboard']);
-    }, 800);
+
+    this.authService
+      .login({
+        company_code: this.companyCode.trim(),
+        email: this.email.trim(),
+        password: this.password,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isSigningIn = false;
+          if (res.success) {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.loginError = res.message || 'Login failed';
+          }
+        },
+        error: (err) => {
+          this.isSigningIn = false;
+          const msg =
+            err.error?.message ||
+            (err.status === 0
+              ? 'Unable to connect to FleetSphere backend server. Please verify the API is running on http://localhost:5000'
+              : 'Authentication failed. Please verify your company code, email, and password.');
+          this.loginError = msg;
+        },
+      });
   }
 }

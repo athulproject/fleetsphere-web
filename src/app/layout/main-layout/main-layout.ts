@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { Topheader } from '../topheader/topheader';
 import { Sidebar } from '../sidebar/sidebar';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -13,6 +14,7 @@ import { Sidebar } from '../sidebar/sidebar';
 })
 export class MainLayout implements OnInit {
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   isCollapsed = signal<boolean>(false);
   isMobileOpen = signal<boolean>(false);
@@ -61,6 +63,6 @@ export class MainLayout implements OnInit {
   }
 
   handleLogout(): void {
-    this.router.navigate(['/']);
+    this.authService.logout();
   }
 }

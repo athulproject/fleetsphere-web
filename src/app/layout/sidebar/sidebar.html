@@ -107,13 +107,20 @@
       }
     </div>
 
-    <div class="border-t border-gray-400 pt-3 space-y-1">
+    <div class="border-t border-gray-200 pt-3 space-y-1">
+      @if (!isCollapsed() && authService.currentTenant()) {
+      <div class="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg mb-2">
+        <div class="font-bold text-slate-800 truncate">{{ authService.companyName() }}</div>
+        <div class="text-[11px] text-blue-600 font-semibold truncate">{{ authService.designationName() }}</div>
+        <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">{{ authService.currentUser()?.email }}</div>
+      </div>
+      }
       <button (click)="handleLogout()"
-        class="flex items-center w-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition"
+        class="flex items-center w-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition cursor-pointer"
         [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'" type="button">
         <svg lucideLogOut class="w-5 h-5 flex-shrink-0" />
         @if (!isCollapsed()) {
-        <span class="ml-3">Log Out</span>
+        <span class="ml-3 font-medium">Log Out</span>
         }
       </button>
     </div>

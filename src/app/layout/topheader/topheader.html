@@ -51,7 +51,7 @@
     </button>
   </div>
 
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-3">
     <button class="md:hidden p-2 text-gray-500 hover:text-blue-500 hover:bg-gray-100 rounded-lg transition-colors"
       (click)="toggleMobileSearch()" type="button" title="Search">
       <svg lucideSearch class="w-5 h-5" />
@@ -67,6 +67,28 @@
       </span>
       }
     </button>
+
+    <!-- Tenant Company Badge -->
+    @if (authService.currentTenant(); as tenant) {
+    <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      <span class="font-semibold">{{ tenant.name }}</span>
+      <span class="text-[10px] px-1 rounded bg-emerald-200/60 font-mono">{{ tenant.code }}</span>
+    </div>
+    }
+
+    <!-- Authenticated User Profile -->
+    @if (authService.currentUser(); as user) {
+    <div class="flex items-center gap-2 pl-2 border-l border-gray-200">
+      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+        {{ (user.email || 'A').charAt(0).toUpperCase() }}
+      </div>
+      <div class="hidden lg:block text-left leading-tight">
+        <span class="text-xs font-semibold text-gray-800 block truncate max-w-[140px]">{{ user.email }}</span>
+        <span class="text-[10px] text-gray-500 font-medium block">{{ authService.designationName() }}</span>
+      </div>
+    </div>
+    }
   </div>
 
   @if (showMobileSearch()) {
