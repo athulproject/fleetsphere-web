@@ -1,0 +1,70 @@
+<div class="space-y-6">
+  <!-- Dynamic Master Breadcrumb Header -->
+  <app-breadcrumb
+    [items]="breadcrumbItems()"
+    [title]="header()?.list_title || header()?.header_name || 'Master List'"
+    [description]="header()?.description || 'Manage and configure dynamic records for this master.'"
+    [loading]="isLoading() && !header()">
+    
+    <div actions class="flex items-center gap-2">
+      <!-- Reload Table Button -->
+      <button
+        type="button"
+        (click)="loadMasterData()"
+        [disabled]="isLoading()"
+        class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-md text-xs font-semibold shadow-xs transition cursor-pointer disabled:opacity-50"
+        title="Reload table records">
+        <svg lucideRefreshCw class="w-3.5 h-3.5" [class.animate-spin]="isLoading()" />
+      </button>
+
+      <!-- Add New Record Button (Navigates to Separate Page!) -->
+      <button
+        type="button"
+        (click)="navigateToAdd()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-sm transition cursor-pointer">
+        <svg lucidePlus class="w-4 h-4" />
+        <span>Add {{ header()?.header_name || 'Record' }}</span>
+      </button>
+    </div>
+  </app-breadcrumb>
+
+  <!-- Main Table with Dynamic Columns and Foreign Key Display -->
+  <app-table
+    [columns]="tableColumns()"
+    [data]="records()"
+    [loading]="isLoading()"
+    [rowActionsTemplate]="actionButtonsTemplate"
+    (rowClick)="navigateToEdit($event)">
+  </app-table>
+
+  <!-- Row Action Buttons Template (Edit & Delete) -->
+  <ng-template #actionButtonsTemplate let-row>
+    <div class="flex items-center gap-1 justify-end">
+      <!-- Edit Button -->
+      <button
+        type="button"
+        (click)="navigateToEdit(row, $event)"
+        class="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+        title="Edit Record">
+        <svg lucideFilePenLine class="w-4 h-4 text-blue-600" />
+      </button>
+
+      <!-- Delete Button -->
+      <button
+        type="button"
+        (click)="deleteRecord(row, $event)"
+        [disabled]="deletingId() === row[header()?.primary_key || 'id']"
+        class="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition cursor-pointer disabled:opacity-40"
+        title="Delete Record">
+        @if (deletingId() === row[header()?.primary_key || 'id']) {
+          <svg class="animate-spin w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+          </svg>
+        } @else {
+          <svg lucideTrash2 class="w-4 h-4 text-red-500" />
+        }
+      </button>
+    </div>
+  </ng-template>
+</div>

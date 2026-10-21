@@ -1,6 +1,6 @@
 <div class="min-h-screen bg-blue-50 flex flex-col text-gray-900">
   <div class="flex-1">
-    <app-sidebar [basePath]="'/dashboard'" [isCollapsed]="isCollapsed()" [isMobileOpen]="isMobileOpen()" [isMobile]="isMobile()"
+    <app-sidebar [basePath]="'/' + authService.primaryRole() + '/dashboard'" [isCollapsed]="isCollapsed()" [isMobileOpen]="isMobileOpen()" [isMobile]="isMobile()"
       [openMenu]="openMenu()" (toggle)="handleToggle()" (mobileOpenChange)="setIsMobileOpen($event)"
       (openMenuChange)="setOpenMenu($event)" (logout)="handleLogout()" />
 

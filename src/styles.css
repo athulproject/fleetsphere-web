@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@import 'toastify-js/src/toastify.css';
 
 /* Custom scrollbar utility */
 .scrollbar::-webkit-scrollbar {
@@ -16,4 +17,101 @@
 }
 .scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(107, 114, 128, 0.7);
+}
+
+/* =========================================================
+   Custom FleetSphere Toastify Styles
+   ========================================================= */
+.toastify {
+  padding: 14px 18px !important;
+  color: #0f172a !important;
+  display: inline-flex !important;
+  align-items: flex-start !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  max-width: 440px !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  z-index: 99999 !important;
+}
+
+/* Close button inside Toastify */
+.toastify .toast-close {
+  opacity: 0.6 !important;
+  padding-left: 14px !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  color: #64748b !important;
+  transition: opacity 0.2s ease !important;
+}
+.toastify .toast-close:hover {
+  opacity: 1 !important;
+  color: #0f172a !important;
+}
+
+/* Success Toast */
+.toastify-custom-success {
+  background: #ffffff !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  border-left: 5px solid #10b981 !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Error Toast */
+.toastify-custom-error {
+  background: #ffffff !important;
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  border-left: 5px solid #f43f5e !important;
+  box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.2) !important;
+}
+
+/* Warning Toast */
+.toastify-custom-warning {
+  background: #ffffff !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  border-left: 5px solid #f59e0b !important;
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Info Toast */
+.toastify-custom-info {
+  background: #ffffff !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  border-left: 5px solid #3b82f6 !important;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Toast Body Elements */
+.fs-toast-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+.fs-toast-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+}
+.fs-toast-content {
+  flex: 1;
+}
+.fs-toast-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 2px;
+  color: #0f172a;
+  display: block;
+}
+.fs-toast-message {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+  word-break: break-word;
 }
