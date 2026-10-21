@@ -1,6 +1,6 @@
 <div
   class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-300 sticky top-0 z-50 text-gray-900">
-  <a [routerLink]="basePath()" class="flex items-center">
+  <a [routerLink]="currentBasePath()" class="flex items-center">
     <svg lucideTruck class="text-blue-500 w-6 h-6" />
     <span class="ml-2 font-bold text-gray-900">FleetSphere</span>
   </a>
@@ -58,7 +58,7 @@
 
   <div class="flex flex-col justify-between h-[calc(100%-4rem)] px-2 py-3 overflow-y-auto scrollbar">
     <div>
-      <a [routerLink]="basePath()" routerLinkActive="bg-blue-100 text-blue-600"
+      <a [routerLink]="currentBasePath()" routerLinkActive="bg-blue-100 text-blue-600"
         [routerLinkActiveOptions]="{ exact: true }"
         class="flex items-center rounded-lg transition text-gray-600 hover:bg-blue-50"
         [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'">
@@ -78,7 +78,7 @@
         }
         <nav class="space-y-1">
           @for (fav of displayedFavourites(); track fav.route_path) {
-          <a [routerLink]="fav.route_path" routerLinkActive="bg-amber-50 text-amber-600"
+          <a [routerLink]="getRoleRoute(fav.route_path)" routerLinkActive="bg-amber-50 text-amber-600"
             class="flex items-center rounded-lg transition text-gray-600 hover:bg-amber-50 hover:text-amber-600"
             [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'">
             <svg [lucideIcon]="getIcon(fav.icon_name)" class="w-5 h-5 flex-shrink-0" />
@@ -91,18 +91,25 @@
       </div>
       } @else {
       @for (group of groupedMenuEntries(); track group.main) {
-      <nav class="space-y-1 mt-2">
-        @for (item of group.items; track item.sub_menu_id ?? item.route_path) {
-        <a [routerLink]="item.route_path" routerLinkActive="bg-blue-100 text-blue-600"
-          class="flex items-center rounded-lg transition text-gray-600 hover:bg-blue-50"
-          [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'">
-          <svg [lucideIcon]="getIcon(item.sub_icon)" class="w-5 h-5 flex-shrink-0" />
-          @if (!isCollapsed()) {
-          <span class="ml-3">{{ item.sub_menu_name }}</span>
-          }
-        </a>
+      <div class="mt-3">
+        @if (!isCollapsed()) {
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">
+          {{ group.main }}
+        </div>
         }
-      </nav>
+        <nav class="space-y-1">
+          @for (item of group.items; track item.sub_menu_id ?? item.route_path) {
+          <a [routerLink]="getRoleRoute(item.route_path)" routerLinkActive="bg-blue-100 text-blue-600"
+            class="flex items-center rounded-lg transition text-gray-600 hover:bg-blue-50"
+            [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'">
+            <svg [lucideIcon]="getIcon(item.sub_icon)" class="w-5 h-5 flex-shrink-0" />
+            @if (!isCollapsed()) {
+            <span class="ml-3">{{ item.sub_menu_name }}</span>
+            }
+          </a>
+          }
+        </nav>
+      </div>
       }
       }
     </div>
@@ -148,7 +155,7 @@
 
     <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 py-5">
       @for (app of quickApps; track app.name) {
-      <a [routerLink]="app.route" (click)="setOpenMenu(false)"
+      <a [routerLink]="getRoleRoute(app.route)" (click)="setOpenMenu(false)"
         class="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-blue-50 hover:text-blue-600 text-gray-700 transition group">
         <div
           class="w-12 h-12 rounded-xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center text-blue-600 mb-2 transition">
@@ -160,4 +167,5 @@
     </div>
   </div>
 </div>
+
 }

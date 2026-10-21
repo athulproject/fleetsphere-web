@@ -65,16 +65,17 @@ export class Topheader {
   );
 
   private readonly allPages: SearchResultItem[] = [
-    { id: 1, title: 'Dashboard Overview', category: 'General', route: '/' },
-    { id: 2, title: 'Employee Directory', category: 'Human Resources', route: '/employees' },
-    { id: 3, title: 'Attendance Tracker', category: 'Human Resources', route: '/attendance' },
-    { id: 4, title: 'Leave Management', category: 'Human Resources', route: '/leaves' },
-    { id: 5, title: 'Payroll Summary', category: 'Finance', route: '/payroll' },
-    { id: 6, title: 'Salary Slips', category: 'Finance', route: '/salary-slips' },
-    { id: 7, title: 'Company Documents', category: 'Administration', route: '/documents' },
-    { id: 8, title: 'Calendar & Holidays', category: 'Organization', route: '/calendar' },
-    { id: 9, title: 'Performance Reviews', category: 'Human Resources', route: '/performance' },
-    { id: 10, title: 'System Settings', category: 'Configuration', route: '/settings' },
+    { id: 1, title: 'Dashboard Overview', category: 'General', route: '/dashboard' },
+    { id: 2, title: 'Hierarchy Master', category: 'Masters', route: '/master/hierarchy' },
+    { id: 3, title: 'Employee Directory', category: 'Human Resources', route: '/employees' },
+    { id: 4, title: 'Attendance Tracker', category: 'Human Resources', route: '/attendance' },
+    { id: 5, title: 'Leave Management', category: 'Human Resources', route: '/leaves' },
+    { id: 6, title: 'Payroll Summary', category: 'Finance', route: '/payroll' },
+    { id: 7, title: 'Salary Slips', category: 'Finance', route: '/salary-slips' },
+    { id: 8, title: 'Company Documents', category: 'Administration', route: '/documents' },
+    { id: 9, title: 'Calendar & Holidays', category: 'Organization', route: '/calendar' },
+    { id: 10, title: 'Performance Reviews', category: 'Human Resources', route: '/performance' },
+    { id: 11, title: 'System Settings', category: 'Configuration', route: '/settings' },
   ];
 
   handleSearch(query: string): void {
@@ -116,7 +117,13 @@ export class Topheader {
     this.showResults.set(false);
     this.showMobileSearch.set(false);
     this.searchQuery.set('');
-    this.router.navigateByUrl(route);
+    const role = this.authService.primaryRole();
+    const cleanRoute = route.startsWith('/') ? route : `/${route}`;
+    if (cleanRoute.startsWith(`/${role}/`)) {
+      this.router.navigateByUrl(cleanRoute);
+    } else {
+      this.router.navigateByUrl(`/${role}${cleanRoute}`);
+    }
   }
 
   setOpenMenu(open: boolean): void {

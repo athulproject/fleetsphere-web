@@ -1,6 +1,8 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
+import type { ApiResponse } from '../../core/models/auth.models';
 import {
   LucideDynamicIcon,
   LucideSun,
@@ -23,7 +25,8 @@ import {
   LucideShield,
   LucideDollarSign,
   LucideBarChart,
-  LucideTruck
+  LucideTruck,
+  LucideLayers
 } from '@lucide/angular';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -55,14 +58,16 @@ export interface MenuItem {
     LucideLayoutDashboard,
     LucideStar,
     LucideLogOut,
-    LucideTruck
+    LucideTruck,
+    LucideLayers
   ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar {
+export class Sidebar implements OnInit {
   private router = inject(Router);
   public authService = inject(AuthService);
+  private api = inject(ApiService);
 
   isCollapsed = input<boolean>(false);
   isMobileOpen = input<boolean>(false);
@@ -77,6 +82,15 @@ export class Sidebar {
 
   isDark = signal<boolean>(false);
   isLogoHovered = signal<boolean>(false);
+
+  // Dynamic role prefix (e.g. /admin, /manager)
+  rolePrefix = computed(() => `/${this.authService.primaryRole()}`);
+  currentBasePath = computed(() => `${this.rolePrefix()}/dashboard`);
+
+  getRoleRoute(path: string): string {
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${this.rolePrefix()}${cleanPath}`;
+  }
 
   readonly quickApps = [
     { name: 'Dashboard', icon: LucideLayoutDashboard, route: '/' },
@@ -96,7 +110,7 @@ export class Sidebar {
       {
         sub_menu_id: 'm-1',
         sub_menu_name: 'Employees',
-        route_path: '/employees',
+        route_path: '/dashboard',
         sub_icon: 'Users',
         display_order: 1,
       },
@@ -113,6 +127,22 @@ export class Sidebar {
         route_path: '/payroll',
         sub_icon: 'DollarSign',
         display_order: 3,
+      },
+    ],
+    Masters: [
+      {
+        sub_menu_id: 'mst-1',
+        sub_menu_name: 'Hierarchy Master',
+        route_path: '/master/hierarchy',
+        sub_icon: 'Layers',
+        display_order: 1,
+      },
+      {
+        sub_menu_id: 'mst-2',
+        sub_menu_name: 'Menu Master',
+        route_path: '/master/menus',
+        sub_icon: 'Grid3X3',
+        display_order: 2,
       },
     ],
     Organization: [
@@ -140,6 +170,27 @@ export class Sidebar {
     ],
   });
 
+  ngOnInit(): void {
+    this.loadUserMenus();
+  }
+
+  loadUserMenus(): void {
+    if (!this.authService.isAuthenticated()) return;
+
+    this.api
+      .get<ApiResponse<{ groupedMenus: Record<string, MenuItem[]> }>>('menus/user-menu')
+      .subscribe({
+        next: (res) => {
+          if (res.success && res.data?.groupedMenus && Object.keys(res.data.groupedMenus).length > 0) {
+            this.groupedMenus.set(res.data.groupedMenus);
+          }
+        },
+        error: () => {
+          // Keep defaults if error
+        },
+      });
+  }
+
   groupedMenuEntries = computed(() => {
     const groups = this.groupedMenus();
     return Object.entries(groups)
@@ -165,7 +216,9 @@ export class Sidebar {
       Shield: LucideShield,
       Star: LucideStar,
       BarChart: LucideBarChart,
-      Truck: LucideTruck
+      Truck: LucideTruck,
+      Layers: LucideLayers,
+      Grid3X3: LucideGrid3X3
     };
     return iconMap[iconName] || LucideLayoutDashboard;
   }
@@ -198,6 +251,6 @@ export class Sidebar {
   }
 
   isActivePath(path: string): boolean {
-    return this.router.url === path;
+    return this.router.url === this.getRoleRoute(path);
   }
 }

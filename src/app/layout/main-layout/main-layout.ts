@@ -14,7 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class MainLayout implements OnInit {
   private router = inject(Router);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
 
   isCollapsed = signal<boolean>(false);
   isMobileOpen = signal<boolean>(false);

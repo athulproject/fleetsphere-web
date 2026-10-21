@@ -42,6 +42,13 @@ export class AuthService {
   public designationName = computed(
     () => this.currentUser()?.designation?.name ?? 'Client Member'
   );
+  public primaryRole = computed(() => {
+    const r = this.roles();
+    if (r && r.length > 0) {
+      return r[0].toLowerCase();
+    }
+    return 'admin';
+  });
 
   constructor() {
     this.loadSession();

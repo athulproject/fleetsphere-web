@@ -1,5 +1,6 @@
 import {
   Component,
+  TemplateRef,
   computed,
   input,
   model,
@@ -19,8 +20,11 @@ import {
 } from '@lucide/angular';
 
 export interface TableColumn {
-  key: string;
-  label: string;
+  header?: string;
+  label?: string;
+  accessor?: string;
+  key?: string;
+  cell?: (row: any) => any;
   sortable?: boolean;
   width?: string;
   align?: 'left' | 'center' | 'right';
@@ -50,25 +54,45 @@ export class TableComponent {
   selectedRows = model<any[]>([]);
   pageSize = model<number>(10);
   searchable = input<boolean>(true);
-  searchPlaceholder = input<string>('Search table...');
-  emptyMessage = input<string>('No records found');
+  searchPlaceholder = input<string>('Search');
+  emptyMessage = input<string>('No data available');
+  customClass = input<string>('');
   rowKey = input<string>('id');
+  rowActionsTemplate = input<TemplateRef<any> | null>(null);
 
   rowClick = output<any>();
   selectionChange = output<any[]>();
 
-  searchQuery = signal<string>('');
+  searchTerm = signal<string>('');
   sortColumn = signal<string | null>(null);
   sortDirection = signal<'asc' | 'desc'>('asc');
   currentPage = signal<number>(1);
 
+  pageSizeOptions = [10, 25, 50, 100];
+
+  getColumnHeader(col: TableColumn): string {
+    return col.header || col.label || '';
+  }
+
+  getColumnKey(col: TableColumn): string {
+    return col.accessor || col.key || '';
+  }
+
+  getCellValue(row: any, col: TableColumn): any {
+    if (col.cell) {
+      return col.cell(row);
+    }
+    const key = this.getColumnKey(col);
+    return key ? row[key] : '';
+  }
+
   filteredData = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    const rows = this.data();
+    const query = this.searchTerm().trim().toLowerCase();
+    const rows = this.data() || [];
     if (!query) return rows;
 
-    return rows.filter(row =>
-      Object.values(row).some(val =>
+    return rows.filter((row) =>
+      Object.values(row).some((val) =>
         String(val ?? '').toLowerCase().includes(query)
       )
     );
@@ -112,27 +136,34 @@ export class TableComponent {
     return this.sortedData().slice(start, start + size);
   });
 
-  startItemIndex = computed(() => {
+  startIndex = computed(() => {
     if (this.sortedData().length === 0) return 0;
     return (this.currentPage() - 1) * this.pageSize() + 1;
   });
 
-  endItemIndex = computed(() => {
-    return Math.min(this.currentPage() * this.pageSize(), this.sortedData().length);
+  endIndex = computed(() => {
+    const end = this.currentPage() * this.pageSize();
+    return Math.min(end, this.sortedData().length);
+  });
+
+  skeletonRows = computed(() => {
+    const count = this.data()?.length > 0 ? Math.min(this.data().length, 10) : this.pageSize();
+    return Array.from({ length: Math.min(count, 10) }, (_, i) => i);
   });
 
   isAllSelected = computed(() => {
     const pageRows = this.paginatedData();
     if (pageRows.length === 0) return false;
     const key = this.rowKey();
-    const selectedKeys = new Set(this.selectedRows().map(r => r[key] ?? r));
-    return pageRows.every(r => selectedKeys.has(r[key] ?? r));
+    const selectedKeys = new Set(this.selectedRows().map((r) => r[key] ?? r));
+    return pageRows.every((r) => selectedKeys.has(r[key] ?? r));
   });
 
   toggleSort(column: TableColumn): void {
     if (!column.sortable) return;
+    const key = this.getColumnKey(column);
 
-    if (this.sortColumn() === column.key) {
+    if (this.sortColumn() === key) {
       if (this.sortDirection() === 'asc') {
         this.sortDirection.set('desc');
       } else {
@@ -140,7 +171,7 @@ export class TableComponent {
         this.sortDirection.set('asc');
       }
     } else {
-      this.sortColumn.set(column.key);
+      this.sortColumn.set(key);
       this.sortDirection.set('asc');
     }
   }
@@ -148,7 +179,7 @@ export class TableComponent {
   isRowSelected(row: any): boolean {
     const key = this.rowKey();
     const targetId = row[key] ?? row;
-    return this.selectedRows().some(r => (r[key] ?? r) === targetId);
+    return this.selectedRows().some((r) => (r[key] ?? r) === targetId);
   }
 
   toggleRow(row: any, event?: Event): void {
@@ -157,7 +188,7 @@ export class TableComponent {
     const targetId = row[key] ?? row;
 
     const current = [...this.selectedRows()];
-    const index = current.findIndex(r => (r[key] ?? r) === targetId);
+    const index = current.findIndex((r) => (r[key] ?? r) === targetId);
 
     if (index > -1) {
       current.splice(index, 1);
@@ -174,15 +205,15 @@ export class TableComponent {
     const pageRows = this.paginatedData();
 
     if (this.isAllSelected()) {
-      const pageKeys = new Set(pageRows.map(r => r[key] ?? r));
-      const remaining = this.selectedRows().filter(r => !pageKeys.has(r[key] ?? r));
+      const pageKeys = new Set(pageRows.map((r) => r[key] ?? r));
+      const remaining = this.selectedRows().filter((r) => !pageKeys.has(r[key] ?? r));
       this.selectedRows.set(remaining);
       this.selectionChange.emit(remaining);
     } else {
       const current = [...this.selectedRows()];
       for (const row of pageRows) {
         const id = row[key] ?? row;
-        if (!current.some(r => (r[key] ?? r) === id)) {
+        if (!current.some((r) => (r[key] ?? r) === id)) {
           current.push(row);
         }
       }
@@ -199,6 +230,11 @@ export class TableComponent {
 
   onPageSizeChange(newSize: number): void {
     this.pageSize.set(Number(newSize));
+    this.currentPage.set(1);
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm.set(term);
     this.currentPage.set(1);
   }
 

@@ -1,31 +1,61 @@
-<div class="w-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-  <!-- Table Header Actions (Search & Custom Actions) -->
-  @if (searchable()) {
-    <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white">
-      <div class="relative w-full sm:w-72 flex items-center">
-        <svg lucideSearch class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-        <input
-          type="text"
-          [placeholder]="searchPlaceholder()"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event); currentPage.set(1)"
-          class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white text-slate-800 transition"
-        />
-      </div>
+<div class="border bg-white border-slate-200 shadow-sm rounded-lg overflow-hidden flex flex-col" [ngClass]="customClass()">
+  <ng-content select="[custom-header]"></ng-content>
 
-      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <ng-content select="[table-actions]"></ng-content>
-      </div>
+  <div class="flex flex-wrap justify-between items-center gap-3 p-3.5 border-b border-slate-100 bg-white">
+    <div class="flex items-center gap-2">
+      @if (loading()) {
+        <div class="flex items-center gap-2 animate-pulse">
+          <div class="h-4 w-10 bg-slate-200 rounded"></div>
+          <div class="h-8 w-16 bg-slate-200 rounded"></div>
+          <div class="h-4 w-14 bg-slate-200 rounded"></div>
+        </div>
+      } @else {
+        <label class="text-xs font-medium text-slate-600">Show</label>
+        <select
+          [ngModel]="pageSize()"
+          (ngModelChange)="onPageSizeChange($event)"
+          class="border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs text-slate-700 bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer">
+          @for (num of pageSizeOptions; track num) {
+            <option [value]="num">{{ num }}</option>
+          }
+        </select>
+        <span class="text-xs font-medium text-slate-600">entries</span>
+      }
     </div>
-  }
 
-  <!-- Table Content -->
-  <div class="overflow-x-auto scrollbar flex-1">
-    <table class="w-full text-left border-collapse text-xs">
-      <thead>
-        <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold select-none">
+    <div class="flex items-center gap-2.5 flex-1 sm:flex-initial justify-end">
+      @if (loading()) {
+        <div class="flex gap-2 items-center animate-pulse">
+          <div class="h-8 w-24 bg-slate-200 rounded-lg"></div>
+          <div class="h-8 w-44 bg-slate-200 rounded-lg"></div>
+        </div>
+      } @else {
+        <div class="flex items-center gap-2">
+          <ng-content select="[table-controls]"></ng-content>
+        </div>
+
+        @if (searchable()) {
+          <div class="relative w-full sm:w-56">
+            <svg lucideSearch class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              [placeholder]="searchPlaceholder()"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="onSearchChange($event)"
+              class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:bg-white text-slate-800 transition"
+            />
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="overflow-x-auto max-h-[62vh] scrollbar">
+    <table class="min-w-full table-fixed border-collapse text-left text-xs">
+      <thead class="bg-slate-50/80 sticky top-0 z-10 border-b border-slate-200">
+        <tr>
           @if (selectable()) {
-            <th class="p-3.5 w-10 text-center">
+            <th class="p-3 w-10 text-center border-b border-slate-200">
               <input
                 type="checkbox"
                 [checked]="isAllSelected()"
@@ -35,69 +65,86 @@
             </th>
           }
 
-          @for (col of columns(); track col.key) {
-            <th
-              [style.width]="col.width"
-              [class.cursor-pointer]="col.sortable"
-              [class.hover:bg-slate-100]="col.sortable"
-              (click)="toggleSort(col)"
-              class="p-3.5 font-semibold text-slate-700 transition"
-              [ngClass]="{
-                'text-center': col.align === 'center',
-                'text-right': col.align === 'right',
-                'text-left': !col.align || col.align === 'left'
-              }">
-              
-              <div class="inline-flex items-center gap-1.5" [ngClass]="{
-                'justify-center': col.align === 'center',
-                'justify-end': col.align === 'right',
-                'justify-start': !col.align || col.align === 'left'
-              }">
-                <span>{{ col.label }}</span>
-
-                @if (col.sortable) {
-                  <span class="text-slate-400">
-                    @if (sortColumn() === col.key) {
-                      @if (sortDirection() === 'asc') {
-                        <svg lucideArrowUp class="w-3.5 h-3.5 text-blue-600" />
+          @if (loading()) {
+            @for (col of columns(); track $index) {
+              <th class="p-3 border-b border-slate-200">
+                <div class="h-4 bg-slate-200 rounded animate-pulse w-3/4"></div>
+              </th>
+            }
+          } @else {
+            @for (col of columns(); track getColumnKey(col) || $index) {
+              <th
+                [style.width]="col.width"
+                [class.cursor-pointer]="col.sortable"
+                [class.hover:bg-slate-100]="col.sortable"
+                (click)="toggleSort(col)"
+                class="p-3 font-semibold text-slate-700 select-none whitespace-nowrap border-b border-slate-200"
+                [ngClass]="{
+                  'text-center': col.align === 'center',
+                  'text-right': col.align === 'right',
+                  'text-left': !col.align || col.align === 'left'
+                }">
+                
+                <div class="inline-flex items-center gap-1.5">
+                  <span>{{ getColumnHeader(col) }}</span>
+                  @if (col.sortable) {
+                    <span class="text-slate-400">
+                      @if (sortColumn() === getColumnKey(col)) {
+                        @if (sortDirection() === 'asc') {
+                          <svg lucideArrowUp class="w-3.5 h-3.5 text-blue-600" />
+                        } @else {
+                          <svg lucideArrowDown class="w-3.5 h-3.5 text-blue-600" />
+                        }
                       } @else {
-                        <svg lucideArrowDown class="w-3.5 h-3.5 text-blue-600" />
+                        <svg lucideArrowUpDown class="w-3.5 h-3.5 opacity-40" />
                       }
-                    } @else {
-                      <svg lucideArrowUpDown class="w-3.5 h-3.5 opacity-50" />
-                    }
-                  </span>
-                }
-              </div>
-            </th>
+                    </span>
+                  }
+                </div>
+              </th>
+            }
           }
         </tr>
       </thead>
 
       <tbody class="divide-y divide-slate-100 text-slate-700">
         @if (loading()) {
-          <!-- Skeleton Loading Rows -->
-          @for (n of [1,2,3,4,5]; track n) {
+          @for (n of skeletonRows(); track n) {
             <tr class="animate-pulse">
               @if (selectable()) {
-                <td class="p-3.5 text-center"><div class="w-4 h-4 bg-slate-200 rounded mx-auto"></div></td>
+                <td class="p-3 text-center"><div class="w-4 h-4 bg-slate-200 rounded mx-auto"></div></td>
               }
-              @for (col of columns(); track col.key) {
-                <td class="p-3.5">
+              @for (col of columns(); track $index) {
+                <td class="p-3">
                   <div class="h-4 bg-slate-200 rounded w-3/4"></div>
                 </td>
               }
             </tr>
           }
+        } @else if (paginatedData().length === 0) {
+          <tr>
+            <td [attr.colspan]="columns().length + (selectable() ? 1 : 0)" class="py-12 text-center">
+              <div class="flex flex-col items-center justify-center text-slate-400">
+                <svg lucideInbox class="w-9 h-9 mb-2 opacity-40 text-slate-400" />
+                <p class="text-xs font-semibold text-slate-600">{{ emptyMessage() }}</p>
+                @if (searchTerm()) {
+                  <p class="text-[11px] text-slate-400 mt-0.5">Try adjusting your search criteria</p>
+                }
+              </div>
+            </td>
+          </tr>
         } @else {
-          @for (row of paginatedData(); track row[rowKey()] ?? row) {
+          @for (row of paginatedData(); track row[rowKey()] ?? $index) {
             <tr
               (click)="onRowClick(row)"
-              class="hover:bg-blue-50/40 transition cursor-pointer"
-              [class.bg-blue-50/60]="selectable() && isRowSelected(row)">
+              class="transition cursor-pointer"
+              [ngClass]="[
+                $index % 2 === 0 ? 'bg-white hover:bg-blue-50/50' : 'bg-slate-50/50 hover:bg-blue-50/50',
+                selectable() && isRowSelected(row) ? 'bg-blue-50/80' : ''
+              ]">
               
               @if (selectable()) {
-                <td class="p-3.5 text-center" (click)="$event.stopPropagation()">
+                <td class="p-3 text-center" (click)="$event.stopPropagation()">
                   <input
                     type="checkbox"
                     [checked]="isRowSelected(row)"
@@ -107,29 +154,23 @@
                 </td>
               }
 
-              @for (col of columns(); track col.key) {
+              @for (col of columns(); track getColumnKey(col) || $index) {
                 <td
-                  class="p-3.5 text-slate-800"
+                  class="p-3 text-slate-800 whitespace-nowrap"
                   [ngClass]="{
                     'text-center': col.align === 'center',
                     'text-right': col.align === 'right',
                     'text-left': !col.align || col.align === 'left'
                   }">
-                  {{ row[col.key] }}
+                  @if (getColumnKey(col) === '_actions' && rowActionsTemplate()) {
+                    <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+                      <ng-container *ngTemplateOutlet="rowActionsTemplate()!; context: { $implicit: row }" />
+                    </div>
+                  } @else {
+                    {{ getCellValue(row, col) }}
+                  }
                 </td>
               }
-            </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="columns().length + (selectable() ? 1 : 0)" class="py-12 text-center">
-                <div class="flex flex-col items-center justify-center text-slate-400">
-                  <svg lucideInbox class="w-10 h-10 mb-2 opacity-40 text-slate-400" />
-                  <p class="text-sm font-semibold text-slate-600">{{ emptyMessage() }}</p>
-                  @if (searchQuery()) {
-                    <p class="text-xs text-slate-400 mt-1">Try adjusting your search criteria</p>
-                  }
-                </div>
-              </td>
             </tr>
           }
         }
@@ -137,53 +178,49 @@
     </table>
   </div>
 
-  <!-- Table Pagination Footer -->
-  <div class="p-3.5 border-t border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-    <!-- Left: Page Size Selector & Record Count -->
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5">
-        <span>Rows:</span>
-        <select
-          [ngModel]="pageSize()"
-          (ngModelChange)="onPageSizeChange($event)"
-          class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 outline-none focus:border-blue-500 cursor-pointer">
-          <option [value]="5">5</option>
-          <option [value]="10">10</option>
-          <option [value]="25">25</option>
-          <option [value]="50">50</option>
-        </select>
-      </div>
-
-      <span>
-        Showing <strong class="text-slate-800 font-semibold">{{ startItemIndex() }}</strong> to
-        <strong class="text-slate-800 font-semibold">{{ endItemIndex() }}</strong> of
-        <strong class="text-slate-800 font-semibold">{{ sortedData().length }}</strong> records
-      </span>
+  <div class="flex flex-wrap justify-between items-center p-3 border-t border-slate-200 bg-white text-xs text-slate-600">
+    <div>
+      @if (loading()) {
+        <div class="h-4 w-40 bg-slate-200 rounded animate-pulse"></div>
+      } @else {
+        <span>
+          Showing
+          <strong class="text-slate-800 font-semibold">{{ startIndex() }}</strong>
+          to
+          <strong class="text-slate-800 font-semibold">{{ endIndex() }}</strong>
+          of
+          <strong class="text-slate-800 font-semibold">{{ sortedData().length }}</strong>
+          entries
+        </span>
+      }
     </div>
 
-    <!-- Right: Page Navigation -->
-    <div class="flex items-center gap-1">
-      <button
-        type="button"
-        [disabled]="currentPage() === 1"
-        (click)="setPage(currentPage() - 1)"
-        class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-        title="Previous Page">
-        <svg lucideChevronLeft class="w-4 h-4" />
-      </button>
+    <div class="flex gap-1.5 items-center mt-2 sm:mt-0">
+      @if (loading()) {
+        <div class="h-8 w-16 bg-slate-200 rounded animate-pulse"></div>
+        <div class="h-8 w-8 bg-slate-200 rounded animate-pulse"></div>
+        <div class="h-8 w-16 bg-slate-200 rounded animate-pulse"></div>
+      } @else {
+        <button
+          type="button"
+          (click)="setPage(currentPage() - 1)"
+          [disabled]="currentPage() === 1"
+          class="px-2.5 py-1 border border-slate-200 rounded-lg bg-white text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors cursor-pointer">
+          Prev
+        </button>
 
-      <span class="px-3 py-1 font-semibold text-slate-700">
-        Page {{ currentPage() }} of {{ totalPages() }}
-      </span>
+        <span class="px-3 py-1 bg-blue-600 text-white rounded-lg font-semibold text-xs shadow-sm">
+          {{ currentPage() }}
+        </span>
 
-      <button
-        type="button"
-        [disabled]="currentPage() === totalPages() || totalPages() === 0"
-        (click)="setPage(currentPage() + 1)"
-        class="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
-        title="Next Page">
-        <svg lucideChevronRight class="w-4 h-4" />
-      </button>
+        <button
+          type="button"
+          (click)="setPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages() || totalPages() === 0"
+          class="px-2.5 py-1 border border-slate-200 rounded-lg bg-white text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors cursor-pointer">
+          Next
+        </button>
+      }
     </div>
   </div>
 </div>
