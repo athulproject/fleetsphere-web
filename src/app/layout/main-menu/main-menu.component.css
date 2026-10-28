@@ -1,0 +1,124 @@
+@keyframes hrmsMenuFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hrmsOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hrmsPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.hmcard {
+  transition: background 0.16s, border-color 0.16s, transform 0.16s, box-shadow 0.16s;
+}
+
+.hmcard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.hmcard:hover .hm-arr {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.hmcard:hover .hm-favbtn {
+  opacity: 1 !important;
+}
+
+.hm-favbtn {
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.hm-favbtn:hover {
+  transform: scale(1.25) !important;
+}
+
+.hm-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.hm-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hm-scroll::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.25);
+  border-radius: 4px;
+}
+
+.hm-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 520px) {
+  .hm-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .hm-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .hm-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+#hm-sidebar {
+  display: none !important;
+}
+
+#hm-right {
+  display: none !important;
+}
+
+@media (min-width: 900px) {
+  #hm-sidebar {
+    display: flex !important;
+    flex-direction: column;
+  }
+  .sm-only-pills {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1300px) {
+  #hm-right {
+    display: flex !important;
+    flex-direction: column;
+  }
+}
+
+@media (hover: none) {
+  .hm-favbtn {
+    opacity: 0.75 !important;
+  }
+}
+

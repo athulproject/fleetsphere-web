@@ -1,0 +1,587 @@
+<div class="space-y-6">
+  <!-- Header & Actions -->
+  <app-breadcrumb
+    [items]="breadcrumbItems"
+    title="User Provisioning & Operational Management"
+    description="Provision system users from genuine employee records, configure operational reporting hierarchies, and manage lifecycle status.">
+    
+    <div actions class="flex items-center gap-2.5">
+      <!-- Tenant Control Panel Button -->
+      <button
+        type="button"
+        (click)="openConfigDrawer()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer">
+        <svg lucideSettings class="w-3.5 h-3.5 text-slate-500" />
+        <span>Control Panel</span>
+      </button>
+
+      <!-- Provision User Button -->
+      <button
+        type="button"
+        (click)="openCreatePage()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer">
+        <svg lucidePlus class="w-3.5 h-3.5" />
+        <span>Provision New User</span>
+      </button>
+    </div>
+  </app-breadcrumb>
+
+  <!-- Quick Operational Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Users -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Users</p>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats().total_users }}</h3>
+        <p class="text-[11px] text-slate-400 mt-0.5">Provisioned system accounts</p>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+        <svg lucideUsers class="w-5 h-5" />
+      </div>
+    </div>
+
+    <!-- Active Users -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-medium text-emerald-600 uppercase tracking-wider">Active Users</p>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats().active_users }}</h3>
+        <p class="text-[11px] text-emerald-600/80 mt-0.5">Operational & authorized</p>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+        <svg lucideUserCheck class="w-5 h-5" />
+      </div>
+    </div>
+
+    <!-- Closed Users -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-medium text-rose-600 uppercase tracking-wider">Closed Accounts</p>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats().closed_users }}</h3>
+        <p class="text-[11px] text-slate-400 mt-0.5">Codes available for recycling</p>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+        <svg lucideUserX class="w-5 h-5" />
+      </div>
+    </div>
+
+    <!-- Reporting Supervisors -->
+    <div class="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-xs font-medium text-purple-600 uppercase tracking-wider">Hierarchy Leads</p>
+        <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats().reporting_managers }}</h3>
+        <p class="text-[11px] text-purple-600/80 mt-0.5">Active reporting managers</p>
+      </div>
+      <div class="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
+        <svg lucideNetwork class="w-5 h-5" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Panel -->
+  <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <svg lucideSlidersHorizontal class="w-4 h-4 text-slate-400" />
+        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Filter Directory</span>
+      </div>
+      <button
+        type="button"
+        (click)="resetFilters()"
+        class="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
+        <svg lucideRotateCcw class="w-3.5 h-3.5" />
+        <span>Reset Filters</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <!-- Universal Search -->
+      <div class="relative lg:col-span-2">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event); applyFilters()"
+          placeholder="Search by User Code, Name, Email or Emp Code..."
+          class="w-full pl-9 pr-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
+        />
+        <svg lucideSearch class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <app-dropdown
+          placeholder="Status"
+          [options]="statusFilterOptions"
+          [value]="filterStatus()"
+          (selectionChange)="filterStatus.set($event); applyFilters()"
+          [showSearch]="false">
+        </app-dropdown>
+      </div>
+
+      <!-- Designation Filter -->
+      <div>
+        <app-dropdown
+          placeholder="Designation"
+          [options]="designationOptions()"
+          [value]="filterDesignation()"
+          (selectionChange)="filterDesignation.set($event); applyFilters()"
+          [showSearch]="true">
+        </app-dropdown>
+      </div>
+
+      <!-- Region Filter -->
+      <div>
+        <app-dropdown
+          placeholder="Region"
+          [options]="regionOptions()"
+          [value]="filterRegion()"
+          (selectionChange)="filterRegion.set($event); applyFilters()"
+          [showSearch]="true">
+        </app-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table Section -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+    @if (isLoading()) {
+      <div class="p-8">
+        <app-loading mode="skeleton"></app-loading>
+      </div>
+    } @else if (users().length === 0) {
+      <div class="p-12 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
+          <svg lucideUsers class="w-7 h-7" />
+        </div>
+        <h4 class="text-sm font-bold text-slate-800">No User Profiles Found</h4>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+          No user profiles match the selected filters. Click "Provision New User" to assign an employee to an operational user account.
+        </p>
+        <button
+          type="button"
+          (click)="openCreatePage()"
+          class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer">
+          <svg lucidePlus class="w-3.5 h-3.5" />
+          <span>Provision User Now</span>
+        </button>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/70 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <th class="py-3 px-4">User Code</th>
+              <th class="py-3 px-4">User & Contact</th>
+              <th class="py-3 px-4">Employee & Designation</th>
+              <th class="py-3 px-4">Reporting Manager</th>
+              <th class="py-3 px-4">Territory (Region / Branch)</th>
+              <th class="py-3 px-4">Role & Shift</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+            @for (u of filteredUsers(); track u.id) {
+              <tr class="hover:bg-slate-50/60 transition group">
+                <!-- User Code -->
+                <td class="py-3 px-4 font-mono font-semibold text-slate-900 whitespace-nowrap">
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/60 text-[11px]">
+                      {{ u.user_code }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- User Name & Email -->
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-900">{{ u.user_name }}</div>
+                  <div class="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                    <span>{{ u.email }}</span>
+                    @if (u.phone_number) {
+                      <span class="text-slate-300">•</span>
+                      <span>{{ u.phone_number }}</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Employee & Designation -->
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 text-slate-700 rounded font-semibold">
+                      {{ u.employee_code }}
+                    </span>
+                    <span class="font-medium text-slate-800">{{ u.designation_name || 'N/A' }}</span>
+                  </div>
+                  @if (u.dept_name) {
+                    <div class="text-[11px] text-slate-400 mt-0.5">{{ u.dept_name }}</div>
+                  }
+                </td>
+
+                <!-- Reporting Manager -->
+                <td class="py-3 px-4">
+                  @if (u.manager_name) {
+                    <div class="flex items-center gap-1.5 font-medium text-slate-800">
+                      <svg lucideNetwork class="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                      <span>{{ u.manager_name }}</span>
+                    </div>
+                    <div class="text-[10px] text-purple-600 font-mono mt-0.5">({{ u.manager_code }})</div>
+                  } @else {
+                    <span class="text-slate-400 italic">None (Top-Level)</span>
+                  }
+                </td>
+
+                <!-- Territory -->
+                <td class="py-3 px-4">
+                  <div class="font-medium text-slate-800">
+                    {{ u.region_name || 'All Regions' }}
+                    @if (u.area_name) {
+                      <span class="text-slate-400">/</span> {{ u.area_name }}
+                    }
+                  </div>
+                  @if (u.branch_name) {
+                    <div class="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                      <svg lucideBuilding2 class="w-3 h-3 text-slate-400" />
+                      <span>{{ u.branch_name }}</span>
+                    </div>
+                  }
+                </td>
+
+                <!-- Role & Shift -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <div class="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {{ u.role_code }}
+                  </div>
+                  @if (u.shift_name) {
+                    <div class="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
+                      <svg lucideClock class="w-3 h-3 text-slate-400" />
+                      <span>{{ u.shift_name }}</span>
+                    </div>
+                  }
+                </td>
+
+                <!-- Status Badge -->
+                <td class="py-3 px-4 whitespace-nowrap">
+                  @if (u.user_status === 'ACTIVE') {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Active
+                    </span>
+                  } @else {
+                    <span
+                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200"
+                      [title]="u.close_reason || 'Closed Account'">
+                      <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                      Closed
+                    </span>
+                  }
+                </td>
+
+                <!-- Actions -->
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <!-- Edit User -->
+                    <button
+                      type="button"
+                      (click)="openEditPage(u)"
+                      title="Edit User Configuration"
+                      class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition cursor-pointer">
+                      <svg lucidePencil class="w-3.5 h-3.5" />
+                    </button>
+
+                    <!-- Close User (if active) -->
+                    @if (u.user_status === 'ACTIVE') {
+                      <button
+                        type="button"
+                        (click)="promptCloseUser(u)"
+                        title="Close / Deactivate Account"
+                        class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition cursor-pointer">
+                        <svg lucideLock class="w-3.5 h-3.5" />
+                      </button>
+                    }
+
+                    <!-- Reopen User (if closed) -->
+                    @if (u.user_status === 'CLOSED') {
+                      <button
+                        type="button"
+                        (click)="promptReopenUser(u)"
+                        title="Reopen Closed Account"
+                        class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition cursor-pointer">
+                        <svg lucideUnlock class="w-3.5 h-3.5" />
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CLOSE USER ACCOUNT                                                 -->
+  <!-- ========================================================================= -->
+  @if (showCloseModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 text-rose-600">
+            <div class="w-8 h-8 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+              <svg lucideLock class="w-4 h-4" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Close User Account</h3>
+              <p class="text-[11px] text-slate-500">Deactivate active operational access</p>
+            </div>
+          </div>
+          <button (click)="showCloseModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1">
+            <svg lucideX class="w-4 h-4" />
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            You are about to close user account <strong class="text-slate-900 font-mono">{{ selectedUser()?.user_code }}</strong>
+            for <strong class="text-slate-900">{{ selectedUser()?.user_name }}</strong>.
+          </p>
+
+          <div class="p-3 bg-amber-50 border border-amber-200/70 rounded-xl text-[11px] text-amber-800 space-y-1">
+            <p class="font-semibold">💡 Tenant Code Recycling Policy:</p>
+            <p>
+              Once closed, this user code can either remain archived or be reassigned to another employee according to your tenant control panel policy.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Reason for Closing Account <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              [ngModel]="closeReason()"
+              (ngModelChange)="closeReason.set($event)"
+              placeholder="e.g. Resigned, Role Transfer, Inactive"
+              class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showCloseModal.set(false)"
+            class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="confirmCloseUser()"
+            [disabled]="isActionLoading() || !closeReason().trim()"
+            class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-lg shadow-xs cursor-pointer inline-flex items-center gap-1.5">
+            @if (isActionLoading()) {
+              <span>Closing...</span>
+            } @else {
+              <span>Confirm & Close Account</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RE-OPEN USER ACCOUNT                                               -->
+  <!-- ========================================================================= -->
+  @if (showReopenModal()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 text-emerald-600">
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+              <svg lucideUnlock class="w-4 h-4" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Reopen User Account</h3>
+              <p class="text-[11px] text-slate-500">Restore operational access & privileges</p>
+            </div>
+          </div>
+          <button (click)="showReopenModal.set(false)" class="text-slate-400 hover:text-slate-600 p-1">
+            <svg lucideX class="w-4 h-4" />
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Are you sure you want to re-open user account <strong class="text-slate-900 font-mono">{{ selectedUser()?.user_code }}</strong>
+            for <strong class="text-slate-900">{{ selectedUser()?.user_name }}</strong>?
+          </p>
+
+          <div class="p-3 bg-emerald-50 border border-emerald-200/70 rounded-xl text-[11px] text-emerald-800 space-y-1">
+            <p class="font-semibold">✓ Verification Checks:</p>
+            <p>
+              The system will verify that <span class="font-mono">{{ selectedUser()?.user_code }}</span> has not been reassigned to another active operator and that the employee does not hold another active account.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            (click)="showReopenModal.set(false)"
+            class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="confirmReopenUser()"
+            [disabled]="isActionLoading()"
+            class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-xs cursor-pointer inline-flex items-center gap-1.5">
+            @if (isActionLoading()) {
+              <span>Reopening...</span>
+            } @else {
+              <span>Confirm & Reopen</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================================= -->
+  <!-- DRAWER: TENANT USER MANAGEMENT CONTROL PANEL                              -->
+  <!-- ========================================================================= -->
+  @if (showConfigDrawer()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end">
+      <div class="bg-white max-w-md w-full h-full shadow-2xl border-l border-slate-200 flex flex-col justify-between animate-in slide-in-from-right duration-200">
+        <!-- Drawer Header -->
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+              <svg lucideSettings class="w-5 h-5" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Tenant Provisioning Controls</h3>
+              <p class="text-[11px] text-slate-500">Multi-tenant configurable business rules</p>
+            </div>
+          </div>
+          <button (click)="showConfigDrawer.set(false)" class="text-slate-400 hover:text-slate-600 p-1">
+            <svg lucideX class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="p-6 overflow-y-auto space-y-5 text-xs flex-1">
+          <!-- Policy Explainer -->
+          <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-[11px] text-blue-800 leading-relaxed">
+            These settings govern how your organization provisions users, auto-generates codes, enforces validation, and handles closed accounts. No hardcoded logic!
+          </div>
+
+          <!-- Auto User Code Generation -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <app-toggle
+              label="Auto-Generate User Code"
+              description="Automatically generate sequential user codes according to tenant prefix & length"
+              [checked]="editableConfig().is_auto_user_code"
+              (toggleChange)="editableConfig().is_auto_user_code = $event">
+            </app-toggle>
+
+            @if (editableConfig().is_auto_user_code) {
+              <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/60">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-700 uppercase mb-1">Prefix</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="editableConfig().user_code_prefix"
+                    class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-700 uppercase mb-1">Digit Padding</label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="8"
+                    [(ngModel)]="editableConfig().user_code_length"
+                    class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none font-mono"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Allow Manual Override -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <app-toggle
+              label="Allow Manual Code Override"
+              description="Allow administrators to type a custom user code even when auto-code is enabled"
+              [checked]="editableConfig().allow_manual_code_override"
+              (toggleChange)="editableConfig().allow_manual_code_override = $event">
+            </app-toggle>
+          </div>
+
+          <!-- Allow Closed Code Reuse -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <app-toggle
+              label="Recycle / Reuse Closed User Codes"
+              description="Allow creating a new user with the user code of a previously closed account"
+              [checked]="editableConfig().allow_closed_code_reuse"
+              (toggleChange)="editableConfig().allow_closed_code_reuse = $event">
+            </app-toggle>
+          </div>
+
+          <!-- Genuine Employee Validation -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <app-toggle
+              label="Enforce Genuine Employee Validation"
+              description="Users can only be provisioned from verified records in the Employee Master"
+              [checked]="editableConfig().require_employee_validation"
+              (toggleChange)="editableConfig().require_employee_validation = $event">
+            </app-toggle>
+          </div>
+
+          <!-- Auto-fetch name -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <app-toggle
+              label="Auto-Fetch Employee Name & Details"
+              description="Automatically fill user name, email, and phone from the verified employee profile"
+              [checked]="editableConfig().auto_fetch_employee_name"
+              (toggleChange)="editableConfig().auto_fetch_employee_name = $event">
+            </app-toggle>
+          </div>
+
+          <!-- Require Reporting Manager -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <app-toggle
+              label="Require Reporting Manager"
+              description="Enforce that every provisioned user must have an assigned reporting manager"
+              [checked]="editableConfig().require_reporting_manager"
+              (toggleChange)="editableConfig().require_reporting_manager = $event">
+            </app-toggle>
+          </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-6 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            (click)="showConfigDrawer.set(false)"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-white border border-slate-200 rounded-lg cursor-pointer">
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="saveTenantConfig()"
+            [disabled]="isSavingConfig()"
+            class="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-xs cursor-pointer inline-flex items-center gap-1.5">
+            @if (isSavingConfig()) {
+              <span>Saving Controls...</span>
+            } @else {
+              <span>Save Tenant Rules</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

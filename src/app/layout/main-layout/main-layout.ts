@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import { Topheader } from '../topheader/topheader';
 import { Sidebar } from '../sidebar/sidebar';
+import { MainMenuComponent } from '../main-menu/main-menu.component';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, Topheader, Sidebar],
+  imports: [CommonModule, RouterOutlet, Topheader, Sidebar, MainMenuComponent],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
 })
