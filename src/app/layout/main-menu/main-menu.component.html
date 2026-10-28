@@ -1,0 +1,405 @@
+<div
+  class="fixed inset-0 z-[999] flex flex-col"
+  [style.background]="theme().overlay"
+  style="animation: hrmsOverlayIn 0.22s ease both"
+>
+  <!-- Top Navigation Header -->
+  <div
+    class="flex items-center gap-2.5 flex-wrap px-4 py-3 shrink-0"
+    [style.border-bottom]="theme().border"
+    style="animation: hrmsMenuFadeUp 0.32s ease both"
+  >
+    <!-- Brand / Title -->
+    <div class="flex items-center gap-2 shrink-0">
+      <div
+        class="w-8 h-8 rounded-xl flex items-center justify-center shadow-xs"
+        style="background: rgba(255,255,255,0.15)"
+      >
+        <svg lucideTruck class="w-4 h-4 text-white" />
+      </div>
+      <span
+        class="font-bold text-base tracking-tight"
+        [style.color]="theme().text"
+      >
+        FleetSphere
+      </span>
+      <span
+        class="text-xs hidden sm:inline"
+        [style.color]="theme().textMuted"
+      >
+        / Navigation
+      </span>
+    </div>
+
+    <!-- Search Input -->
+    <div class="flex-1 min-w-[140px] relative">
+      <svg
+        lucideSearch
+        class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+        [style.color]="theme().textMuted"
+      />
+      <input
+        type="text"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event); showFavs.set(false)"
+        placeholder="Search pages, modules or operations…"
+        class="w-full box-border pl-8.5 pr-8.5 py-2 rounded-xl text-xs outline-none transition"
+        [style.background]="theme().searchBg"
+        [style.border]="theme().searchBorder"
+        [style.color]="theme().text"
+      />
+      @if (search()) {
+        <button
+          type="button"
+          (click)="search.set('')"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer p-0.5 flex items-center"
+          [style.color]="theme().textMuted"
+          title="Clear search"
+        >
+          <svg lucideX class="w-3.5 h-3.5" />
+        </button>
+      }
+    </div>
+
+    <!-- Favourites Button -->
+    <button
+      type="button"
+      (click)="handleFavsToggle()"
+      class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition select-none"
+      [style.border]="showFavs() ? '1px solid #f59e0b' : theme().btnBorder"
+      [style.background]="showFavs() ? '#f59e0b' : theme().btnBg"
+      [style.color]="showFavs() ? '#1e1b4b' : theme().textSub"
+    >
+      <svg
+        lucideStar
+        class="w-3.5 h-3.5"
+        [style.fill]="showFavs() ? '#1e1b4b' : 'none'"
+      />
+      <span class="hidden sm:inline">Favourites</span>
+      @if (favService.favRoutes().length > 0) {
+        <span
+          class="text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+          style="background: rgba(0,0,0,0.18)"
+          [style.color]="showFavs() ? '#1e1b4b' : '#f59e0b'"
+        >
+          {{ favService.favRoutes().length }}
+        </span>
+      }
+    </button>
+
+    <!-- Close Button -->
+    <button
+      type="button"
+      (click)="handleClose()"
+      class="shrink-0 w-8.5 h-8.5 rounded-xl flex items-center justify-center cursor-pointer transition"
+      [style.background]="theme().btnBg"
+      [style.border]="theme().btnBorder"
+      [style.color]="theme().textSub"
+      title="Close menu (Esc)"
+    >
+      <svg lucideX class="w-4 h-4" />
+    </button>
+  </div>
+
+  <!-- Body Content -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Desktop Category Sidebar (#hm-sidebar) -->
+    @if (!search() && !showFavs()) {
+      <div
+        id="hm-sidebar"
+        class="hm-scroll w-[220px] shrink-0 py-4 px-2.5 overflow-y-auto"
+        [style.border-right]="theme().border"
+        [style.background]="theme().sidebarBg"
+        style="animation: hrmsMenuFadeUp 0.32s 70ms ease both"
+      >
+        <p
+          class="text-[10px] font-bold uppercase tracking-wider mb-2.5 pl-2"
+          [style.color]="theme().textMuted"
+        >
+          Categories
+        </p>
+
+        @for (menu of menuData(); track menu.category; let idx = $index) {
+          @let isActive = activeCategory() === menu.category;
+          <button
+            type="button"
+            (click)="handleCategorySelect(menu.category)"
+            class="w-full text-left py-2.5 px-3 rounded-xl text-xs cursor-pointer mb-1 flex items-center justify-between border-0 transition"
+            [style.background]="isActive ? theme().catActiveBg : 'transparent'"
+            [style.color]="isActive ? theme().catActiveTxt : theme().catTxt"
+            [style.font-weight]="isActive ? '600' : '400'"
+            style="animation: hrmsMenuFadeUp 0.32s ease both"
+            [style.animation-delay]="(90 + idx * 25) + 'ms'"
+          >
+            <span class="truncate">{{ menu.category }}</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              @if (categoryHasFavourite(menu.category)) {
+                <svg lucideStar class="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              }
+              <span
+                class="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                [style.background]="isActive ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.10)'"
+                [style.color]="isActive ? theme().catActiveTxt : theme().textMuted"
+              >
+                {{ menu.items.length }}
+              </span>
+            </div>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Middle Scroll Area (Pills + Cards) -->
+    <div class="hm-scroll flex-1 overflow-y-auto flex flex-col">
+      <!-- Mobile Category Horizontal Pills -->
+      @if (!search() && !showFavs() && menuData().length > 0) {
+        <div class="hm-scroll sm-only-pills shrink-0 flex gap-1.5 px-3.5 pt-3 overflow-x-auto">
+          @for (menu of menuData(); track menu.category) {
+            @let isActive = activeCategory() === menu.category;
+            <button
+              type="button"
+              (click)="handleCategorySelect(menu.category)"
+              class="shrink-0 py-1.5 px-3.5 rounded-full text-xs cursor-pointer border-0 flex items-center gap-1.5 transition select-none"
+              [style.background]="isActive ? theme().pillActiveBg : theme().pillBg"
+              [style.color]="isActive ? theme().pillActiveTxt : theme().pillTxt"
+              [style.font-weight]="isActive ? '600' : '400'"
+            >
+              <span>{{ menu.category }}</span>
+              @if (categoryHasFavourite(menu.category)) {
+                <svg lucideStar class="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Heading & Stats Row -->
+      <div
+        class="shrink-0 flex items-center justify-between px-4.5 py-3"
+        style="animation: hrmsMenuFadeUp 0.32s 110ms ease both"
+      >
+        <div>
+          <h2 class="text-base font-bold m-0" [style.color]="theme().text">
+            {{ heading() }}
+          </h2>
+          <p class="text-[11px] mt-0.5" [style.color]="theme().textMuted">
+            {{ visibleItems().length }} {{ visibleItems().length === 1 ? 'item' : 'items' }}
+          </p>
+        </div>
+
+        @if (!showFavs() && !search() && favService.favRoutes().length > 0) {
+          <button
+            type="button"
+            (click)="handleFavsToggle()"
+            class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 border border-amber-400/30 px-2.5 py-1 rounded-lg cursor-pointer bg-amber-400/10 hover:bg-amber-400/20 transition"
+          >
+            <svg lucideStar class="w-2.5 h-2.5 fill-amber-400" />
+            <span>{{ favService.favRoutes().length }} saved</span>
+          </button>
+        }
+      </div>
+
+      <!-- Skeletons Loading View -->
+      @if (loading()) {
+        <div class="hm-grid px-3.5 pb-5">
+          @for (skeleton of [1,2,3,4,5,6,7,8]; track skeleton) {
+            <div
+              class="h-[82px] rounded-2xl"
+              style="background: rgba(255,255,255,0.07); animation: hrmsPulse 1.5s ease-in-out infinite"
+            ></div>
+          }
+        </div>
+      }
+
+      <!-- Empty State View -->
+      @if (!loading() && visibleItems().length === 0) {
+        <div
+          class="flex flex-col items-center justify-center py-16 px-6 text-center"
+          [style.color]="theme().textMuted"
+        >
+          @if (showFavs()) {
+            <svg lucideStar class="w-9 h-9 mb-3 opacity-30 text-amber-400" />
+            <p class="text-sm font-semibold m-0 text-white">No favourites yet</p>
+            <p class="text-xs mt-1 opacity-70">Hover any card and click ★ to save it to your favourites</p>
+          } @else {
+            <svg lucideSearch class="w-9 h-9 mb-3 opacity-30" />
+            <p class="text-sm font-semibold m-0 text-white">No results for "{{ search() }}"</p>
+            <p class="text-xs mt-1 opacity-70">Try searching with a different term or keyword</p>
+          }
+        </div>
+      }
+
+      <!-- Cards Grid View -->
+      @if (!loading() && visibleItems().length > 0) {
+        <div
+          class="hm-grid px-3.5 pb-6"
+          style="animation: hrmsMenuFadeUp 0.32s 130ms ease both"
+        >
+          @for (item of visibleItems(); track item.routes; let i = $index) {
+            @let isFav = isItemFav(item);
+            <div
+              class="hmcard relative rounded-2xl p-3.5 cursor-pointer select-none"
+              [style.background]="theme().cardBg"
+              [style.border]="theme().cardBorder"
+              (click)="navigate(item.routes)"
+              style="animation: hrmsMenuFadeUp 0.32s ease both"
+              [style.animation-delay]="(140 + (i > 8 ? 8 : i) * 18) + 'ms'"
+            >
+              <!-- Star Favourite Button -->
+              <button
+                type="button"
+                class="hm-favbtn absolute top-2.5 right-2.5 p-1.5 rounded-lg border-0 cursor-pointer flex items-center justify-center transition"
+                (click)="handleFavClick(item, $event)"
+                [style.background]="isFav ? theme().favBtnActiveBg : theme().btnBg"
+                [style.color]="isFav ? '#f59e0b' : theme().textMuted"
+                [style.opacity]="isFav ? 1 : 0"
+                title="Toggle favourite"
+              >
+                <svg
+                  lucideStar
+                  class="w-3 h-3"
+                  [style.fill]="isFav ? '#f59e0b' : 'none'"
+                />
+              </button>
+
+              <!-- Card Content -->
+              <div class="flex items-start gap-2.5 pr-7">
+                <!-- Glowing Dot Indicator -->
+                <div
+                  class="mt-1.5 w-2 h-2 rounded-full shrink-0 shadow-xs"
+                  [style.background]="theme().dot"
+                ></div>
+
+                <div class="flex-1 min-w-0">
+                  <!-- Title & Slide Arrow -->
+                  <div class="flex items-center gap-1.5">
+                    <span
+                      class="text-xs font-semibold truncate"
+                      [style.color]="theme().text"
+                    >
+                      {{ item.label }}
+                    </span>
+                    <svg
+                      lucideArrowRight
+                      class="hm-arr w-3 h-3 shrink-0 opacity-0 -translate-x-1 transition-all duration-200"
+                      [style.color]="theme().textSub"
+                    />
+                  </div>
+
+                  <!-- Description -->
+                  <p
+                    class="mt-1 text-[11px] leading-relaxed line-clamp-2"
+                    [style.color]="theme().textMuted"
+                  >
+                    {{ item.description || ('Manage ' + item.label.toLowerCase() + ' and operational settings') }}
+                  </p>
+
+                  <!-- Category Badge (when searching or showing favs) -->
+                  @if ((search() || showFavs()) && item.category) {
+                    <span
+                      class="mt-1.5 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                      [style.background]="theme().catBadgeBg"
+                      [style.color]="theme().catBadgeTxt"
+                    >
+                      {{ item.category }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Desktop Right Illustration & Stats Panel (#hm-right) -->
+    <div
+      id="hm-right"
+      class="hm-scroll w-[200px] shrink-0 py-6 px-3.5 flex flex-col items-center justify-start overflow-y-auto"
+      [style.border-left]="theme().border"
+      [style.background]="theme().sidebarBg"
+      style="animation: hrmsMenuFadeUp 0.32s 50ms ease both"
+    >
+      <!-- Modern Fleet Logistics Illustration -->
+      <div class="w-full max-w-[150px] aspect-square flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 shadow-inner">
+        <svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto drop-shadow-md">
+          <!-- Road/Platform -->
+          <ellipse cx="80" cy="95" rx="65" ry="18" fill="url(#roadGrad)" opacity="0.4" />
+          <!-- Truck Cabin -->
+          <rect x="75" y="45" width="40" height="36" rx="6" fill="#4f46e5" />
+          <rect x="85" y="48" width="26" height="18" rx="3" fill="#93c5fd" opacity="0.8" />
+          <!-- Truck Trailer -->
+          <rect x="35" y="32" width="45" height="49" rx="5" fill="#6366f1" />
+          <path d="M42 42H70M42 50H70M42 58H70" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" />
+          <!-- Wheels -->
+          <circle cx="48" cy="85" r="9" fill="#1e1b4b" stroke="#818cf8" stroke-width="2" />
+          <circle cx="48" cy="85" r="4" fill="#cbd5e1" />
+          <circle cx="98" cy="85" r="9" fill="#1e1b4b" stroke="#818cf8" stroke-width="2" />
+          <circle cx="98" cy="85" r="4" fill="#cbd5e1" />
+          <!-- Satellite / Telematics Icon -->
+          <circle cx="115" cy="25" r="10" fill="#f59e0b" opacity="0.9" />
+          <path d="M112 25L118 25M115 22L115 28" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+          <defs>
+            <radialGradient id="roadGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(80 95) scale(65 18)">
+              <stop stop-color="#818cf8" stop-opacity="0.6"/>
+              <stop offset="1" stop-color="#4f46e5" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- Quick Metrics Breakdown -->
+      @if (!loading() && menuData().length > 0) {
+        <div class="mt-4 w-full space-y-1.5">
+          <div
+            class="flex items-center justify-between py-2 px-3 rounded-xl"
+            [style.background]="theme().statBg"
+          >
+            <span class="text-[11px]" [style.color]="theme().textMuted">Modules</span>
+            <span class="text-xs font-bold" [style.color]="theme().text">{{ menuData().length }}</span>
+          </div>
+
+          <div
+            class="flex items-center justify-between py-2 px-3 rounded-xl"
+            [style.background]="theme().statBg"
+          >
+            <span class="text-[11px]" [style.color]="theme().textMuted">Total Pages</span>
+            <span class="text-xs font-bold" [style.color]="theme().text">{{ allItems().length }}</span>
+          </div>
+
+          <div
+            class="flex items-center justify-between py-2 px-3 rounded-xl"
+            [style.background]="theme().favStatBg"
+          >
+            <span class="text-[11px]" [style.color]="theme().textMuted">Favourites</span>
+            <span class="text-xs font-bold" [style.color]="theme().favStatTxt">{{ favService.favRoutes().length }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Footer Bar -->
+  <div
+    class="shrink-0 flex items-center flex-wrap gap-3.5 px-4.5 py-2.5 text-[11px]"
+    [style.border-top]="theme().border"
+    [style.background]="theme().footerBg"
+    [style.color]="theme().textMuted"
+  >
+    <span>
+      <kbd
+        class="py-0.5 px-2 rounded-md font-mono text-[10px]"
+        [style.background]="theme().kbdBg"
+        [style.border]="theme().kbdBorder"
+        [style.color]="theme().textSub"
+      >
+        Esc
+      </kbd>
+      to close
+    </span>
+    <span class="hidden sm:inline">Click ★ on any card to pin to left sidebar favourites</span>
+    <span class="ml-auto flex items-center gap-1.5 font-medium">
+      <svg lucideLayoutGrid class="w-3.5 h-3.5" /> FleetSphere
+    </span>
+  </div>
+</div>

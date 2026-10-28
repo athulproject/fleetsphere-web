@@ -60,8 +60,10 @@
                   [options]="dropdownOptions()[field.column_name] || []"
                   [value]="formData()[field.column_name]"
                   (selectionChange)="onFieldChange(field.column_name, $event)"
-                  [disabled]="field.readonly"
-                  [placeholder]="'Select ' + field.label"
+                  [disabled]="isFieldDisabled(field)"
+                  [placeholder]="getDropdownPlaceholder(field)"
+                  [loading]="fieldLoading()[field.column_name] || false"
+                  [helperText]="getDropdownHelperText(field)"
                   [errorMessage]="formErrors()[field.column_name]"
                   [showSearch]="true">
                 </app-dropdown>

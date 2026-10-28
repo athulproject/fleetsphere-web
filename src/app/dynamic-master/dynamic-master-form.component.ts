@@ -88,6 +88,7 @@ export class DynamicMasterFormComponent implements OnInit {
   formData = signal<Record<string, any>>({});
   formErrors = signal<Record<string, string>>({});
   dropdownOptions = signal<Record<string, DropdownOption[]>>({});
+  fieldLoading = signal<Record<string, boolean>>({});
 
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
@@ -187,6 +188,16 @@ export class DynamicMasterFormComponent implements OnInit {
         this.isLoading.set(false);
         if (res.success && res.data) {
           this.formData.set({ ...res.data });
+
+          // Load dependent dropdown options for fields whose parent has a value in the existing record
+          for (const f of this.fields()) {
+            if (f.field_type === 'dropdown' && f.depends_on) {
+              const parentVal = res.data[f.depends_on];
+              if (parentVal !== undefined && parentVal !== null && parentVal !== '') {
+                this.loadDropdownOptionsForField(f.column_name, parentVal);
+              }
+            }
+          }
         } else {
           this.toast.error(res.message || 'Record not found.');
           this.navigateBack();
@@ -224,18 +235,36 @@ export class DynamicMasterFormComponent implements OnInit {
     );
 
     for (const f of dropdownFields) {
-      this.loadDropdownOptionsForField(f.column_name);
+      if (f.depends_on) {
+        // Do not load dependent dropdowns upfront; initialize as empty until parent is chosen
+        const current = { ...this.dropdownOptions() };
+        current[f.column_name] = [];
+        this.dropdownOptions.set(current);
+      } else {
+        this.loadDropdownOptionsForField(f.column_name);
+      }
     }
   }
 
   loadDropdownOptionsForField(columnName: string, parentValue?: any): void {
-    const query = parentValue ? `?parentValue=${encodeURIComponent(parentValue)}` : '';
+    const loadingMap = { ...this.fieldLoading() };
+    loadingMap[columnName] = true;
+    this.fieldLoading.set(loadingMap);
+
+    const query = parentValue !== undefined && parentValue !== null && parentValue !== ''
+      ? `?parentValue=${encodeURIComponent(parentValue)}`
+      : '';
+
     this.api
       .get<ApiResponse<Array<{ value: any; label: string }>>>(
         `dynamic-master/${this.masterCode()}/dropdown/${columnName}${query}`
       )
       .subscribe({
         next: (res) => {
+          const currentLoading = { ...this.fieldLoading() };
+          currentLoading[columnName] = false;
+          this.fieldLoading.set(currentLoading);
+
           if (res.success && res.data) {
             const current = { ...this.dropdownOptions() };
             current[columnName] = res.data.map((opt: { value: any; label: string }) => ({
@@ -244,6 +273,11 @@ export class DynamicMasterFormComponent implements OnInit {
             }));
             this.dropdownOptions.set(current);
           }
+        },
+        error: () => {
+          const currentLoading = { ...this.fieldLoading() };
+          currentLoading[columnName] = false;
+          this.fieldLoading.set(currentLoading);
         },
       });
   }
@@ -260,13 +294,72 @@ export class DynamicMasterFormComponent implements OnInit {
       this.formErrors.set(errs);
     }
 
-    // Cascade dependent dropdowns if any
-    const dependentField = this.fields().find(
-      (f) => f.depends_on && f.depends_on.toLowerCase() === columnName.toLowerCase()
+    // Cascade dependent dropdowns
+    this.handleCascadingChanges(columnName, val);
+  }
+
+  private handleCascadingChanges(parentColumn: string, parentValue: any): void {
+    // Find all fields that depend on parentColumn
+    const dependentFields = this.fields().filter(
+      (f) => f.depends_on && f.depends_on.toLowerCase() === parentColumn.toLowerCase()
     );
-    if (dependentField) {
-      this.loadDropdownOptionsForField(dependentField.column_name, val);
+
+    for (const dep of dependentFields) {
+      // Clear dependent field value in formData
+      const current = { ...this.formData() };
+      current[dep.column_name] = null;
+      this.formData.set(current);
+
+      // Clear validation error for dependent field if any
+      if (this.formErrors()[dep.column_name]) {
+        const errs = { ...this.formErrors() };
+        delete errs[dep.column_name];
+        this.formErrors.set(errs);
+      }
+
+      if (parentValue !== undefined && parentValue !== null && parentValue !== '') {
+        // Fetch child dropdown options filtered by parentValue
+        this.loadDropdownOptionsForField(dep.column_name, parentValue);
+      } else {
+        // Empty options if parentValue was cleared
+        const currentOpts = { ...this.dropdownOptions() };
+        currentOpts[dep.column_name] = [];
+        this.dropdownOptions.set(currentOpts);
+      }
+
+      // Recursively cascade down to any sub-dependents (A -> B -> C)
+      this.handleCascadingChanges(dep.column_name, null);
     }
+  }
+
+  isFieldDisabled(field: DynamicMasterField): boolean {
+    if (field.readonly) return true;
+    if (field.field_type === 'dropdown' && field.depends_on) {
+      const parentVal = this.formData()[field.depends_on];
+      return parentVal === undefined || parentVal === null || parentVal === '';
+    }
+    return false;
+  }
+
+  getFieldLabel(columnName: string): string {
+    const f = this.fields().find(
+      (x) => x.column_name.toLowerCase() === columnName.toLowerCase()
+    );
+    return f?.label || columnName;
+  }
+
+  getDropdownPlaceholder(field: DynamicMasterField): string {
+    if (this.isFieldDisabled(field) && field.depends_on) {
+      return `Select ${this.getFieldLabel(field.depends_on)} first`;
+    }
+    return `Select ${field.label}`;
+  }
+
+  getDropdownHelperText(field: DynamicMasterField): string {
+    if (this.isFieldDisabled(field) && field.depends_on) {
+      return `Requires ${this.getFieldLabel(field.depends_on)}`;
+    }
+    return '';
   }
 
   validate(): boolean {

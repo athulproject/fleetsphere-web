@@ -1,0 +1,418 @@
+<div class="space-y-6">
+  <!-- Breadcrumb -->
+  <app-breadcrumb
+    [items]="breadcrumbItems()"
+    [title]="(isEdit() ? 'Edit User Configuration' : 'Provision New System User')"
+    [description]="(isEdit() ? 'Modify operational reporting lines, assigned regions, and system roles for this user.' : 'Verify an employee, configure territorial assignments, and generate user access.')">
+    
+    <div actions class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="navigateBack()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer">
+        <svg lucideArrowLeft class="w-3.5 h-3.5" />
+        <span>Back to Users</span>
+      </button>
+    </div>
+  </app-breadcrumb>
+
+  @if (isLoading()) {
+    <div class="bg-white rounded-xl border border-slate-200 p-8 shadow-xs">
+      <app-loading mode="skeleton"></app-loading>
+    </div>
+  } @else {
+    <div class="space-y-5">
+      <!-- ===================================================================== -->
+      <!-- SECTION 1: GENUINE EMPLOYEE VERIFICATION                              -->
+      <!-- ===================================================================== -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+              <svg lucideUserCheck class="w-4 h-4" />
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Step 1: Employee Verification & Auto-Profile
+              </h3>
+              <p class="text-[11px] text-slate-500">
+                Validate that the employee is genuine in the Employee Master before provisioning a user account.
+              </p>
+            </div>
+          </div>
+          @if (verifiedEmp()) {
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full">
+              <svg lucideCheckCircle2 class="w-3.5 h-3.5" />
+              <span>Genuine Employee Verified</span>
+            </span>
+          }
+        </div>
+
+        <div class="p-6 space-y-4">
+          @if (!isEdit()) {
+            <div class="max-w-xl">
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Enter Employee Code <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <input
+                    type="text"
+                    [ngModel]="formData().employee_code"
+                    (ngModelChange)="onFieldChange('employee_code', $event)"
+                    (keyup.enter)="verifyEmployee()"
+                    placeholder="e.g. EMP001, EMP002, EMP003"
+                    class="w-full pl-9 pr-3.5 py-2 text-xs bg-white border rounded-lg outline-none font-mono uppercase transition"
+                    [ngClass]="formErrors()['employee_code'] ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'"
+                  />
+                  <svg lucideSearch class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                </div>
+                <button
+                  type="button"
+                  (click)="verifyEmployee()"
+                  [disabled]="isVerifyingEmp() || !formData().employee_code.trim()"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer inline-flex items-center gap-1.5">
+                  @if (isVerifyingEmp()) {
+                    <svg class="animate-spin w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                    </svg>
+                    <span>Verifying...</span>
+                  } @else {
+                    <svg lucideUserCheck class="w-3.5 h-3.5" />
+                    <span>Verify Employee</span>
+                  }
+                </button>
+              </div>
+
+              @if (formErrors()['employee_code']) {
+                <p class="text-xs text-rose-500 mt-1 font-medium">{{ formErrors()['employee_code'] }}</p>
+              }
+
+              @if (empVerifyError()) {
+                <div class="mt-2.5 p-3 bg-rose-50 border border-rose-200/70 rounded-xl flex items-start gap-2 text-xs text-rose-700">
+                  <svg lucideAlertCircle class="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{{ empVerifyError() }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Verified Employee Details Card -->
+          @if (verifiedEmp()) {
+            <div class="p-4.5 bg-slate-50/80 border border-slate-200/90 rounded-xl space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Employee Profile Details</span>
+                </div>
+                <span class="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded border border-blue-200/60">
+                  {{ verifiedEmp()?.employee_code }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs pt-1">
+                <div>
+                  <span class="text-slate-400 block text-[11px]">Full Name</span>
+                  <span class="font-bold text-slate-900 mt-0.5 block">{{ verifiedEmp()?.full_name }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">Designation / Job</span>
+                  <span class="font-semibold text-slate-800 mt-0.5 block">{{ verifiedEmp()?.designation_name || 'N/A' }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">Department</span>
+                  <span class="font-medium text-slate-800 mt-0.5 block">{{ verifiedEmp()?.dept_name || 'N/A' }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[11px]">Contact</span>
+                  <span class="text-slate-700 mt-0.5 block">{{ verifiedEmp()?.email }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 2: USER CODE CONFIGURATION                                    -->
+      <!-- ===================================================================== -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
+              <svg lucideShield class="w-4 h-4" />
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Step 2: User Code & Access Identification
+              </h3>
+              <p class="text-[11px] text-slate-500">
+                Configured by multi-tenant control policy (auto-sequence or manual entry).
+              </p>
+            </div>
+          </div>
+          @if (isAutoCode() && !isManualOverride()) {
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200/60 rounded-full">
+              <svg lucideSparkles class="w-3.5 h-3.5" />
+              <span>Auto-Generated by Policy</span>
+            </span>
+          }
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  User Code <span class="text-rose-500 font-bold">*</span>
+                </label>
+                @if (tenantConfig()?.allow_manual_code_override && !isEdit()) {
+                  <button
+                    type="button"
+                    (click)="toggleManualOverride(!isManualOverride())"
+                    class="text-[11px] text-blue-600 hover:text-blue-700 font-medium cursor-pointer underline">
+                    {{ isManualOverride() ? 'Switch to Auto-Code' : 'Manual Override' }}
+                  </button>
+                }
+              </div>
+
+              <div class="relative">
+                <input
+                  type="text"
+                  [ngModel]="formData().user_code"
+                  (ngModelChange)="onFieldChange('user_code', $event)"
+                  [readonly]="isEdit() || (isAutoCode() && !isManualOverride())"
+                  placeholder="e.g. USR0001"
+                  class="w-full px-3.5 py-2 text-xs font-mono font-bold uppercase rounded-lg border outline-none transition"
+                  [ngClass]="[
+                    isEdit() || (isAutoCode() && !isManualOverride()) ? 'bg-slate-50 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-slate-900',
+                    formErrors()['user_code'] ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'
+                  ]"
+                />
+                @if (isAutoCode() && !isManualOverride() && !isEdit()) {
+                  <button
+                    type="button"
+                    (click)="fetchNextAutoCode()"
+                    title="Refresh code sequence"
+                    class="absolute right-2.5 top-2 text-slate-400 hover:text-blue-600 cursor-pointer p-0.5">
+                    <svg lucideRefreshCw class="w-3.5 h-3.5" [ngClass]="isGeneratingCode() ? 'animate-spin' : ''" />
+                  </button>
+                }
+              </div>
+
+              @if (formErrors()['user_code']) {
+                <p class="text-xs text-rose-500 mt-1 font-medium">{{ formErrors()['user_code'] }}</p>
+              }
+
+              @if (codeReusedNote()) {
+                <p class="text-[11px] text-amber-600 mt-1 font-medium flex items-center gap-1">
+                  <span>💡</span>
+                  <span>{{ codeReusedNote() }}</span>
+                </p>
+              }
+            </div>
+
+            <!-- Role Selection -->
+            <div>
+              <app-dropdown
+                label="System Application Role"
+                [required]="true"
+                [options]="roleOptions()"
+                [value]="formData().role_code"
+                (selectionChange)="onFieldChange('role_code', $event)"
+                placeholder="Select System Role"
+                [showSearch]="false">
+              </app-dropdown>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 3: OPERATIONAL ASSIGNMENT & TERRITORY HIERARCHY               -->
+      <!-- ===================================================================== -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+              <svg lucideNetwork class="w-4 h-4" />
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Step 3: Operational Assignment & Territorial Hierarchy
+              </h3>
+              <p class="text-[11px] text-slate-500">
+                Designate reporting manager, operating territory (Region & Area), branch depot, and work shift.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-5">
+          <!-- User Profile Details (Auto-filled from Employee) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                User Full Name <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="formData().user_name"
+                (ngModelChange)="onFieldChange('user_name', $event)"
+                placeholder="User name"
+                class="w-full px-3.5 py-2 text-xs rounded-lg border outline-none bg-white transition"
+                [ngClass]="formErrors()['user_name'] ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'"
+              />
+              @if (formErrors()['user_name']) {
+                <p class="text-xs text-rose-500 mt-1 font-medium">{{ formErrors()['user_name'] }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Official Email Address <span class="text-rose-500 font-bold">*</span>
+              </label>
+              <input
+                type="email"
+                [ngModel]="formData().email"
+                (ngModelChange)="onFieldChange('email', $event)"
+                placeholder="user@fleetsphere.com"
+                class="w-full px-3.5 py-2 text-xs rounded-lg border outline-none bg-white transition"
+                [ngClass]="formErrors()['email'] ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'"
+              />
+              @if (formErrors()['email']) {
+                <p class="text-xs text-rose-500 mt-1 font-medium">{{ formErrors()['email'] }}</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Contact Phone Number
+              </label>
+              <input
+                type="text"
+                [ngModel]="formData().phone_number"
+                (ngModelChange)="onFieldChange('phone_number', $event)"
+                placeholder="+91 98470 12345"
+                class="w-full px-3.5 py-2 text-xs rounded-lg border border-slate-200 outline-none bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition"
+              />
+            </div>
+          </div>
+
+          <!-- Reporting Manager & Branch -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+            <div>
+              <app-dropdown
+                label="Reporting Manager (Supervisor)"
+                [options]="managerOptions()"
+                [value]="formData().reporting_manager_id"
+                (selectionChange)="onFieldChange('reporting_manager_id', $event)"
+                placeholder="Select Reporting Manager"
+                [required]="tenantConfig()?.require_reporting_manager"
+                [errorMessage]="formErrors()['reporting_manager_id']"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+
+            <div>
+              <app-dropdown
+                label="Assigned Operating Branch / Depot"
+                [options]="branchOptions()"
+                [value]="formData().branch_id"
+                (selectionChange)="onFieldChange('branch_id', $event)"
+                placeholder="Select Branch / Depot"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+          </div>
+
+          <!-- Cascading Operational Territory: Region -> Area -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+            <div>
+              <app-dropdown
+                label="Operational Region"
+                [options]="regionOptions()"
+                [value]="formData().region_id"
+                (selectionChange)="onRegionChange($event)"
+                placeholder="Select Operational Region"
+                [required]="tenantConfig()?.require_region_assignment"
+                [errorMessage]="formErrors()['region_id']"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+
+            <div>
+              <app-dropdown
+                label="Operational Area"
+                [options]="filteredAreaOptions()"
+                [value]="formData().area_id"
+                (selectionChange)="onFieldChange('area_id', $event)"
+                [placeholder]="formData().region_id ? 'Select Operational Area' : 'Select Region first'"
+                [disabled]="!formData().region_id"
+                [helperText]="!formData().region_id ? 'Select Region above to enable area options' : ''"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+          </div>
+
+          <!-- Shift & Notes -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+            <div>
+              <app-dropdown
+                label="Work Shift"
+                [options]="shiftOptions()"
+                [value]="formData().shift_id"
+                (selectionChange)="onFieldChange('shift_id', $event)"
+                placeholder="Select Work Shift"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Operational Notes / Directives
+              </label>
+              <textarea
+                rows="2"
+                [ngModel]="formData().notes"
+                (ngModelChange)="onFieldChange('notes', $event)"
+                placeholder="Optional operational or reporting relationship notes"
+                class="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition resize-y">
+              </textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Submission Footer -->
+        <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-200 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            (click)="navigateBack()"
+            [disabled]="isSaving()"
+            class="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer disabled:opacity-50">
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            (click)="saveUser()"
+            [disabled]="isSaving()"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition cursor-pointer disabled:opacity-50">
+            @if (isSaving()) {
+              <svg class="animate-spin w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+              </svg>
+              <span>Saving...</span>
+            } @else {
+              <svg lucideSave class="w-4 h-4" />
+              <span>{{ isEdit() ? 'Update User Configuration' : 'Complete & Provision User' }}</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

@@ -17,8 +17,8 @@ import {
   LucideLayoutDashboard,
   LucideChevronDown,
   LucideChevronUp,
-  LucideCheck,
   LucideX,
+  LucideRows3,
 } from '@lucide/angular';
 
 export interface MenuMappingItem {
@@ -35,6 +35,17 @@ export interface MenuMappingItem {
   can_add: boolean;
   can_edit: boolean;
   can_delete: boolean;
+}
+
+export interface SubMenuConfigItem {
+  sub_menu_id: number;
+  sub_menu_name: string;
+  header_name: string;
+  route_path: string;
+  icon_name: string;
+  display_order: number;
+  is_sidebar_visible: boolean;
+  description: string;
 }
 
 @Component({
@@ -56,6 +67,7 @@ export interface MenuMappingItem {
     LucideChevronDown,
     LucideChevronUp,
     LucideX,
+    LucideRows3,
   ],
   templateUrl: './menu-master.component.html',
 })
@@ -63,8 +75,8 @@ export class MenuMasterComponent implements OnInit {
   private api = inject(ApiService);
   private toast = inject(StatusToastService);
 
-  // Active Mapping Type: 'role' | 'designation' | 'employee'
-  activeMappingType = signal<'role' | 'designation' | 'employee'>('role');
+  // Active Mapping Type: 'role' | 'designation' | 'employee' | 'sidebar'
+  activeMappingType = signal<'role' | 'designation' | 'employee' | 'sidebar'>('role');
 
   // Role State
   roles = signal<Array<{ role_id: string; role_code: string; role_name: string }>>([]);
@@ -82,6 +94,10 @@ export class MenuMasterComponent implements OnInit {
   menuItems = signal<MenuMappingItem[]>([]);
   isLoading = signal<boolean>(false);
   isSaving = signal<boolean>(false);
+
+  // Sub-Menu Sidebar & Display Order Config State
+  subMenuList = signal<SubMenuConfigItem[]>([]);
+  isSavingSidebar = signal<boolean>(false);
 
   // Category Filtering: 'All Menus' or specific Header Name
   selectedCategory = signal<string>('All Menus');
@@ -159,6 +175,10 @@ export class MenuMasterComponent implements OnInit {
     return this.menuItems().length;
   });
 
+  sidebarVisibleCount = computed<number>(() => {
+    return this.subMenuList().filter((s) => s.is_sidebar_visible).length;
+  });
+
   // Whether all visible items are selected
   isAllVisibleSelected = computed<boolean>(() => {
     const list = this.filteredMenuItems();
@@ -174,7 +194,7 @@ export class MenuMasterComponent implements OnInit {
   // ----------------------------------------------------------------
   // Top Tabs Switcher
   // ----------------------------------------------------------------
-  switchMappingType(type: 'role' | 'designation' | 'employee'): void {
+  switchMappingType(type: 'role' | 'designation' | 'employee' | 'sidebar'): void {
     this.activeMappingType.set(type);
     this.selectedCategory.set('All Menus');
     this.searchQuery.set('');
@@ -191,6 +211,8 @@ export class MenuMasterComponent implements OnInit {
         this.selectedEmployeeId.set(this.employees()[0].employee_id);
       }
       this.loadEmployeeMappings(this.selectedEmployeeId());
+    } else if (type === 'sidebar') {
+      this.loadSubMenuList();
     }
   }
 
@@ -235,6 +257,70 @@ export class MenuMasterComponent implements OnInit {
             this.selectedEmployeeId.set(res.data[0].employee_id);
           }
         }
+      },
+    });
+  }
+
+  loadSubMenuList(): void {
+    this.isLoading.set(true);
+    this.api.get<ApiResponse<any[]>>('menus/sub-menus').subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.success && res.data) {
+          const mapped: SubMenuConfigItem[] = res.data.map((row) => ({
+            sub_menu_id: row.sub_menu_id,
+            sub_menu_name: row.sub_menu_name,
+            header_name: row.header_name,
+            route_path: row.route_path,
+            icon_name: row.icon_name || 'Layers',
+            display_order: row.display_order ?? 1,
+            is_sidebar_visible: row.is_sidebar_visible !== false,
+            description: row.description || '',
+          }));
+          this.subMenuList.set(mapped);
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.toast.error(err.error?.message || 'Failed to load sub-menus.');
+      },
+    });
+  }
+
+  updateSubMenuVisibility(subMenuId: number, visible: boolean): void {
+    this.subMenuList.update((list) =>
+      list.map((it) => (it.sub_menu_id === subMenuId ? { ...it, is_sidebar_visible: visible } : it))
+    );
+  }
+
+  updateSubMenuOrder(subMenuId: number, order: any): void {
+    const num = parseInt(order, 10) || 1;
+    this.subMenuList.update((list) =>
+      list.map((it) => (it.sub_menu_id === subMenuId ? { ...it, display_order: num } : it))
+    );
+  }
+
+  saveSubMenuConfig(): void {
+    this.isSavingSidebar.set(true);
+    const items = this.subMenuList().map((it) => ({
+      sub_menu_id: it.sub_menu_id,
+      display_order: it.display_order,
+      is_sidebar_visible: it.is_sidebar_visible,
+    }));
+
+    this.api.put<ApiResponse<any>>('menus/sub-menus-batch', { items }).subscribe({
+      next: (res) => {
+        this.isSavingSidebar.set(false);
+        if (res.success) {
+          this.toast.success(res.message || 'Sidebar visibility & display order saved.', 'Saved');
+          this.loadSubMenuList();
+        } else {
+          this.toast.error(res.message || 'Failed to save configuration.');
+        }
+      },
+      error: (err) => {
+        this.isSavingSidebar.set(false);
+        this.toast.error(err.error?.message || 'Error saving configuration.');
       },
     });
   }
@@ -361,8 +447,10 @@ export class MenuMasterComponent implements OnInit {
       this.loadRoleMappings(this.selectedRoleCode());
     } else if (type === 'designation') {
       this.loadRoleMappings(this.selectedDesignationCode() || 'ADMIN');
-    } else {
+    } else if (type === 'employee') {
       this.loadEmployeeMappings(this.selectedEmployeeId());
+    } else {
+      this.loadSubMenuList();
     }
     this.toast.info('Mappings reloaded to original state.', 'Reset');
   }
