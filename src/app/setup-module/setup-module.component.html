@@ -1,0 +1,171 @@
+<div class="space-y-4">
+  <!-- Page Breadcrumbs -->
+  <app-breadcrumb
+    [items]="breadcrumbItems"
+    title="Setup Modules Options"
+    description="Select a setup module category on the left to configure operational controls, policies, and parameters.">
+  </app-breadcrumb>
+
+  <!-- Main Setup Modules Container matching the screenshot -->
+  <div class="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+    
+    <!-- Top Header Bar -->
+    <div class="px-6 py-3.5 flex items-center justify-between border-b border-slate-200">
+      <h2 class="text-sm font-bold text-slate-900 tracking-tight">
+        Setup Modules Options
+      </h2>
+
+      <!-- Search For Setup input -->
+      <div class="relative w-64">
+        <input
+          type="text"
+          placeholder="Search For Setup"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-md outline-none text-slate-700 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            (click)="searchQuery.set('')"
+            class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 cursor-pointer text-xs">
+            ✕
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- 2-Column Content Layout -->
+    <div class="grid grid-cols-12 min-h-[560px]">
+      
+      <!-- =================================================================== -->
+      <!-- LEFT COLUMN: TABS VERTICAL LIST (~Col 3)                            -->
+      <!-- =================================================================== -->
+      <div class="col-span-12 md:col-span-4 lg:col-span-3 p-4 border-r border-slate-200 space-y-2 bg-slate-50/20">
+        @for (tab of setupTabs(); track tab.id) {
+          <button
+            type="button"
+            (click)="selectTab(tab.id)"
+            class="w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-2.5 border"
+            [ngClass]="activeTabId() === tab.id
+              ? 'bg-[#0b288c] text-white border-[#0b288c] shadow-xs'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200/90'">
+            
+            <!-- Tab Icon -->
+            <span
+              class="shrink-0 transition"
+              [ngClass]="activeTabId() === tab.id ? 'text-white' : tab.iconColorClass">
+              @switch (tab.iconName) {
+                @case ('SlidersHorizontal') { <svg lucideSlidersHorizontal class="w-4 h-4" /> }
+                @case ('Users') { <svg lucideUsers class="w-4 h-4" /> }
+                @case ('Clock') { <svg lucideClock class="w-4 h-4" /> }
+                @case ('DollarSign') { <svg lucideDollarSign class="w-4 h-4" /> }
+                @case ('Calendar') { <svg lucideCalendar class="w-4 h-4" /> }
+                @case ('Truck') { <svg lucideTruck class="w-4 h-4" /> }
+                @case ('Grid3X3') { <svg lucideGrid3X3 class="w-4 h-4" /> }
+                @case ('FileText') { <svg lucideFileText class="w-4 h-4" /> }
+                @default { <svg lucideSettings class="w-4 h-4" /> }
+              }
+            </span>
+
+            <!-- Tab Label -->
+            <span class="truncate">{{ tab.label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- RIGHT COLUMN: SELECTED SECTION & CARDS GRID (~Col 9)               -->
+      <!-- Features the solid vertical blue accent divider on left             -->
+      <!-- =================================================================== -->
+      <div class="col-span-12 md:col-span-8 lg:col-span-9 p-6 border-l-[3px] border-blue-600 bg-white flex flex-col justify-between">
+        <div>
+          <!-- Section Title in Bright Blue -->
+          <div class="flex items-center justify-between">
+            <h3 class="text-blue-600 font-bold text-sm tracking-tight">
+              @if (searchQuery().trim()) {
+                Search Results for "{{ searchQuery() }}"
+              } @else {
+                {{ activeTab().label }}
+              }
+            </h3>
+            
+            @if (searchQuery().trim()) {
+              <span class="text-xs text-slate-400 font-medium">
+                {{ allMatchingCards().length }} setup options found
+              </span>
+            }
+          </div>
+
+          <!-- Divider line across right column -->
+          <div class="h-px bg-slate-200 mt-2 mb-5"></div>
+
+          <!-- If Search is Active and matches across multiple tabs -->
+          @if (searchQuery().trim()) {
+            @if (allMatchingCards().length === 0) {
+              <div class="p-12 text-center text-slate-400">
+                <p class="text-xs font-medium">No setup options match "{{ searchQuery() }}".</p>
+                <button
+                  type="button"
+                  (click)="searchQuery.set('')"
+                  class="mt-2 text-xs text-blue-600 hover:underline font-semibold cursor-pointer">
+                  Clear Search
+                </button>
+              </div>
+            } @else {
+              <div class="flex flex-wrap gap-4">
+                @for (item of allMatchingCards(); track item.title) {
+                  <div
+                    (click)="navigateTo(item.route)"
+                    class="w-48 sm:w-52 h-26 bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:shadow-xs hover:border-blue-400 transition cursor-pointer flex flex-col justify-between group">
+                    <div class="flex items-center justify-between">
+                      <div class="w-4.5 h-4.5 rounded-full border-[1.5px] border-purple-400 flex items-center justify-center">
+                        <div class="w-1.5 h-1.5 rounded-full bg-purple-600"></div>
+                      </div>
+                      <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                        {{ item.tabLabel }}
+                      </span>
+                    </div>
+                    <div class="text-xs font-semibold text-slate-800 group-hover:text-blue-600 transition leading-snug">
+                      {{ item.title }}
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          } 
+          
+          <!-- Normal Tab View (Matches user's screenshot layout) -->
+          @else {
+            <div class="flex flex-wrap gap-4">
+              @for (item of filteredActiveCards(); track item.title) {
+                <div
+                  (click)="navigateTo(item.route)"
+                  class="w-48 sm:w-52 h-26 bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:shadow-xs hover:border-blue-400 transition cursor-pointer flex flex-col justify-between group">
+                  
+                  <!-- Circular purple/violet bullseye icon matching screenshot -->
+                  <div class="flex items-center">
+                    <div class="w-4.5 h-4.5 rounded-full border-[1.5px] border-purple-400 flex items-center justify-center">
+                      <div class="w-1.5 h-1.5 rounded-full bg-purple-600"></div>
+                    </div>
+                  </div>
+
+                  <!-- Card Title -->
+                  <div class="text-xs font-semibold text-slate-800 group-hover:text-blue-600 transition leading-snug">
+                    {{ item.title }}
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Subtle bottom footer hint -->
+        <div class="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+          <span>FleetSphere Enterprise Architecture</span>
+          <span>Click any card to launch its configuration page</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

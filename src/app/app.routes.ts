@@ -8,6 +8,8 @@ import { DynamicMasterFormComponent } from './dynamic-master/dynamic-master-form
 import { MenuMasterComponent } from './menu-master/menu-master.component';
 import { UserManagementListComponent } from './user-management/user-management-list.component';
 import { UserManagementFormComponent } from './user-management/user-management-form.component';
+import { SetupModuleComponent } from './setup-module/setup-module.component';
+import { ControlPanelComponent } from './control-panel/control-panel.component';
 import { authGuard } from './core/guards/auth.guard';
 import { AuthService } from './core/services/auth.service';
 
@@ -20,6 +22,11 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardHandler },
+      { path: 'setupmodule', component: SetupModuleComponent },
+      { path: 'setup-module', redirectTo: 'setupmodule', pathMatch: 'full' },
+      { path: 'ctrl_panel', component: ControlPanelComponent },
+      { path: 'ctrl-panel', redirectTo: 'ctrl_panel', pathMatch: 'full' },
+      { path: 'control-panel', redirectTo: 'ctrl_panel', pathMatch: 'full' },
       { path: 'user-management', component: UserManagementListComponent },
       { path: 'user-management/create', component: UserManagementFormComponent },
       { path: 'user-management/edit/:id', component: UserManagementFormComponent },
@@ -36,6 +43,46 @@ export const routes: Routes = [
     ],
   },
   // Auto-redirect if accessed without role prefix
+  {
+    path: 'setupmodule',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/setupmodule`;
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'setup-module',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/setupmodule`;
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'ctrl_panel',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/ctrl_panel`;
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'ctrl-panel',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/ctrl_panel`;
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'control-panel',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/ctrl_panel`;
+    },
+    pathMatch: 'full',
+  },
   {
     path: 'user-management',
     redirectTo: () => {
