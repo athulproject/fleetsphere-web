@@ -27,6 +27,7 @@ import {
   LucideBarChart,
   LucideTruck,
   LucideLayers,
+  LucideSlidersHorizontal,
 } from '@lucide/angular';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -265,6 +266,7 @@ export class Sidebar implements OnInit {
       Truck: LucideTruck,
       Layers: LucideLayers,
       Grid3X3: LucideGrid3X3,
+      SlidersHorizontal: LucideSlidersHorizontal,
     };
     return iconMap[iconName] || LucideLayoutDashboard;
   }

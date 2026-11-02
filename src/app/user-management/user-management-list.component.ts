@@ -354,12 +354,11 @@ export class UserManagementListComponent implements OnInit {
     });
   }
 
-  // Tenant Control Panel
+  // Tenant Control Panel - Navigate to dedicated Control Panel page
   openConfigDrawer(): void {
-    if (this.tenantConfig()) {
-      this.editableConfig.set({ ...this.tenantConfig()! });
-    }
-    this.showConfigDrawer.set(true);
+    this.router.navigate([`/${this.role()}/ctrl_panel`], {
+      queryParams: { module: 'user_management' },
+    });
   }
 
   saveTenantConfig(): void {
