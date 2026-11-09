@@ -7,18 +7,22 @@ import {
   input,
   output,
   signal,
-  viewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   LucideSearch,
   LucideGrid3X3,
   LucideBell,
-  LucideX
+  LucidePalette,
+  LucideSun,
+  LucideMoon,
+  LucideLogOut,
+  LucideSlidersHorizontal,
 } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 export interface SearchResultItem {
   id: string | number;
@@ -33,9 +37,15 @@ export interface SearchResultItem {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     LucideSearch,
     LucideGrid3X3,
     LucideBell,
+    LucidePalette,
+    LucideSun,
+    LucideMoon,
+    LucideLogOut,
+    LucideSlidersHorizontal,
   ],
   templateUrl: './topheader.html',
   styleUrl: './topheader.css',
@@ -44,6 +54,7 @@ export class Topheader {
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   public authService = inject(AuthService);
+  public themeService = inject(ThemeService);
 
   openMenu = input<boolean>(false);
   notifCount = input<number>(0);
@@ -55,7 +66,10 @@ export class Topheader {
   isLoading = signal<boolean>(false);
   showResults = signal<boolean>(false);
   showMobileSearch = signal<boolean>(false);
+  showProfileMenu = signal<boolean>(false);
   searchResults = signal<SearchResultItem[]>([]);
+
+  themeStyleRoute = computed(() => `/${this.authService.primaryRole()}/theme-style`);
 
   noResults = computed(
     () =>
@@ -66,16 +80,17 @@ export class Topheader {
 
   private readonly allPages: SearchResultItem[] = [
     { id: 1, title: 'Dashboard Overview', category: 'General', route: '/dashboard' },
-    { id: 2, title: 'Hierarchy Master', category: 'Masters', route: '/master/hierarchy' },
-    { id: 3, title: 'Employee Directory', category: 'Human Resources', route: '/employees' },
-    { id: 4, title: 'Attendance Tracker', category: 'Human Resources', route: '/attendance' },
-    { id: 5, title: 'Leave Management', category: 'Human Resources', route: '/leaves' },
-    { id: 6, title: 'Payroll Summary', category: 'Finance', route: '/payroll' },
-    { id: 7, title: 'Salary Slips', category: 'Finance', route: '/salary-slips' },
+    { id: 2, title: 'Theme Style & Personalize', category: 'Personalization', route: '/theme-style' },
+    { id: 3, title: 'Hierarchy Master', category: 'Masters', route: '/master/hierarchy' },
+    { id: 4, title: 'Employee Directory', category: 'Human Resources', route: '/employees' },
+    { id: 5, title: 'User Management', category: 'Identity & Access', route: '/user-management' },
+    { id: 6, title: 'Attendance Tracker', category: 'Human Resources', route: '/attendance' },
+    { id: 7, title: 'Payroll Summary', category: 'Finance', route: '/payroll' },
     { id: 8, title: 'Company Documents', category: 'Administration', route: '/documents' },
     { id: 9, title: 'Calendar & Holidays', category: 'Organization', route: '/calendar' },
-    { id: 10, title: 'Performance Reviews', category: 'Human Resources', route: '/performance' },
-    { id: 11, title: 'System Settings', category: 'Configuration', route: '/settings' },
+    { id: 10, title: 'Control Panel', category: 'Options', route: '/ctrl_panel' },
+    { id: 11, title: 'Setup Module Options', category: 'Options', route: '/setupmodule' },
+    { id: 12, title: 'System Settings', category: 'Configuration', route: '/settings' },
   ];
 
   handleSearch(query: string): void {
@@ -92,7 +107,6 @@ export class Topheader {
     this.isLoading.set(true);
     this.showResults.set(true);
 
-    // Simulate snappy search filtering
     setTimeout(() => {
       const filtered = this.allPages.filter(
         item =>
@@ -104,26 +118,23 @@ export class Topheader {
     }, 120);
   }
 
-  handleKeyPress(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      const results = this.searchResults();
-      if (results.length > 0) {
-        this.handleResultClick(results[0].route);
-      }
-    }
-  }
-
   handleResultClick(route: string): void {
     this.showResults.set(false);
     this.showMobileSearch.set(false);
     this.searchQuery.set('');
-    const role = this.authService.primaryRole();
-    const cleanRoute = route.startsWith('/') ? route : `/${route}`;
-    if (cleanRoute.startsWith(`/${role}/`)) {
-      this.router.navigateByUrl(cleanRoute);
-    } else {
-      this.router.navigateByUrl(`/${role}${cleanRoute}`);
+    const fullRoute = route.startsWith('/') ? `/${this.authService.primaryRole()}${route}` : `/${this.authService.primaryRole()}/${route}`;
+    this.router.navigate([fullRoute]);
+  }
+
+  handleKeyPress(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.showResults.set(false);
+      this.showMobileSearch.set(false);
     }
+  }
+
+  toggleMobileSearch(): void {
+    this.showMobileSearch.update(prev => !prev);
   }
 
   setOpenMenu(open: boolean): void {
@@ -134,16 +145,27 @@ export class Topheader {
     this.openNotifications.emit();
   }
 
-  toggleMobileSearch(): void {
-    this.showMobileSearch.update(v => !v);
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  openPersonalize(): void {
+    this.themeService.openPersonalizeModal();
+  }
+
+  toggleProfileMenu(): void {
+    this.showProfileMenu.update(prev => !prev);
+  }
+
+  handleLogout(): void {
+    this.authService.logout();
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    const clickedInside = this.elementRef.nativeElement.contains(event.target);
-    if (!clickedInside) {
+  handleClickOutside(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
       this.showResults.set(false);
-      this.showMobileSearch.set(false);
+      this.showProfileMenu.set(false);
     }
   }
 }

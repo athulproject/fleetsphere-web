@@ -1,12 +1,18 @@
-<div class="flex items-center justify-between w-full h-full px-3 md:px-6 py-2.5">
+<div class="flex items-center justify-between w-full h-full px-3 md:px-6 py-2.5 transition-colors duration-200"
+  [ngClass]="themeService.headerColor() === 'dark' ? 'header-dark' : 'header-light'">
+
+  <!-- Left Side: Search Bar & App Menu Button -->
   <div class="flex-1 hidden md:flex items-center gap-3 relative">
     <div class="relative w-full max-w-md">
-      <input type="text" placeholder="Search Pages..."
-        class="w-full px-4 py-2 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm bg-gray-50/50 hover:bg-white focus:bg-white transition-all"
+      <input type="text" placeholder="Search pages, masters, settings..."
+        class="w-full px-4 py-2 pl-10 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-1"
         [value]="searchQuery()" (input)="handleSearch($any($event.target).value)" (keydown)="handleKeyPress($event)" />
-      <!-- <svg lucideSearch class="absolute left-3 top-1/2 transform -tranblue-y-1/2 w-4 h-4 text-gray-400" /> -->
+      <div class="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none">
+        <svg lucideSearch class="w-4 h-4" />
+      </div>
+
       @if (isLoading()) {
-      <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500">
+      <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-blue-500">
         <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
@@ -15,111 +21,175 @@
       }
     </div>
 
+    <!-- Search Results Flyout -->
     @if (showResults()) {
     <div
-      class="absolute top-full left-0 w-full max-w-md bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto scrollbar mt-1">
-      <div class="p-2">
-        @if (noResults()) {
-        <div class="flex flex-col items-center justify-center py-8 text-gray-400">
-          <svg lucideSearch class="w-8 h-8 mb-2 opacity-40" />
-          <div class="text-sm font-medium">No results found</div>
-          <div class="text-xs mt-1">Try a different search term</div>
-        </div>
-        } @else {
-        <div class="text-xs font-semibold text-gray-500 px-3 py-2 border-b border-gray-100">
-          {{ searchResults().length }} results found
-        </div>
-        <div class="space-y-1 pt-1">
-          @for (result of searchResults(); track result.id) {
-          <button type="button" class="w-full text-left px-3 py-2.5 hover:bg-blue-50 rounded-md transition-colors"
-            (click)="handleResultClick(result.route)">
-            <div class="flex items-center justify-between cursor-pointer">
-              <div class="font-medium text-gray-900 text-sm">{{ result.title }}</div>
-              <div class="text-xs text-gray-500">{{ result.category }}</div>
-            </div>
-          </button>
-          }
-        </div>
+      class="absolute top-full left-0 w-full max-w-md bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-y-auto scrollbar mt-1.5 p-2 text-slate-800">
+      @if (noResults()) {
+      <div class="flex flex-col items-center justify-center py-6 text-gray-400">
+        <svg lucideSearch class="w-7 h-7 mb-1.5 opacity-40" />
+        <div class="text-xs font-semibold">No results found</div>
+        <div class="text-[11px] text-gray-400">Try a different search term</div>
+      </div>
+      } @else {
+      <div class="text-[11px] font-bold text-gray-400 px-3 py-1.5 border-b border-gray-100 uppercase tracking-wider">
+        {{ searchResults().length }} pages found
+      </div>
+      <div class="space-y-1 pt-1">
+        @for (result of searchResults(); track result.id) {
+        <button type="button"
+          class="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer flex items-center justify-between"
+          (click)="handleResultClick(result.route)">
+          <div>
+            <div class="font-medium text-slate-900 text-sm">{{ result.title }}</div>
+            <div class="text-[11px] text-slate-400">{{ result.category }}</div>
+          </div>
+          <span class="text-xs text-slate-300">→</span>
+        </button>
         }
       </div>
+      }
     </div>
     }
 
-    <button type="button" (click)="setOpenMenu(true)"
-      class="p-2 rounded-lg text-gray-600 hover:text-blue-600 cursor-pointer" title="Application Menu">
-      <svg lucideGrid3X3 class="w-6 h-6" />
+    <!-- Main Navigation Menu Trigger -->
+    <button type="button" (click)="setOpenMenu(true)" class="p-2 rounded-xl transition-colors cursor-pointer"
+      title="Application Navigation Menu">
+      <svg lucideGrid3X3 class="w-5 h-5" />
     </button>
   </div>
 
-  <div class="flex items-center gap-3">
-    <button class="md:hidden p-2 text-gray-500 hover:text-blue-500 hover:bg-gray-100 rounded-lg transition-colors"
-      (click)="toggleMobileSearch()" type="button" title="Search">
+  <!-- Right Side Controls -->
+  <div class="flex items-center gap-2">
+    <!-- Mobile Search Toggle -->
+    <button class="md:hidden p-2 rounded-xl transition-colors" (click)="toggleMobileSearch()" type="button"
+      title="Search">
       <svg lucideSearch class="w-5 h-5" />
     </button>
 
-    <button (click)="triggerNotifications()" class="relative p-2 text-gray-600 hover:text-blue-600 cursor-pointer"
+    <!-- Theme Mode Toggle (Sun / Moon) -->
+    <button
+      type="button"
+      (click)="toggleTheme()"
+      class="p-2 rounded-xl transition-colors cursor-pointer"
+      [title]="themeService.colorMode() === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      @if (themeService.colorMode() === 'dark') {
+        <svg lucideSun class="w-5 h-5 text-amber-400" />
+      } @else {
+        <svg lucideMoon class="w-5 h-5 text-slate-600" />
+      }
+    </button>
+
+    <!-- Theme Style / Personalize Workspace Button -->
+    <a [routerLink]="themeStyleRoute()"
+      class="p-2 rounded-xl transition-colors cursor-pointer relative group flex items-center gap-1.5"
+      title="Theme Style & Personalize Workspace">
+      <svg lucidePalette class="w-5 h-5" [style.color]="themeService.accentColor()" />
+      <span class="hidden xl:inline text-xs font-bold" [style.color]="themeService.accentColor()"></span>
+    </a>
+
+    <!-- Notifications Button -->
+    <button (click)="triggerNotifications()" class="relative p-2 rounded-xl transition-colors cursor-pointer"
       type="button" title="Notifications">
       <svg lucideBell class="w-5 h-5" />
       @if (notifCount() > 0) {
       <span
-        class="absolute top-1 right-1 flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+        class="absolute top-1 right-1 flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full shadow-xs">
         {{ notifCount() }}
       </span>
       }
     </button>
 
-    <!-- Authenticated User Profile -->
+    <!-- Authenticated User Profile & Dropdown -->
     @if (authService.currentUser(); as user) {
-    <div class="flex items-center gap-2 pl-2 border-l border-gray-200">
-      <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-        {{ (user.email || 'A').charAt(0).toUpperCase() }}
+    <div class="relative pl-2 ml-1 border-l border-gray-200/40">
+      <button type="button" (click)="toggleProfileMenu()"
+        class="flex items-center gap-2.5 p-1 rounded-xl transition hover:opacity-90 cursor-pointer text-left">
+        <div
+          class="w-8 h-8 rounded-full text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0"
+          [style.background-color]="themeService.accentColor()">
+          {{ (user.email || 'U').charAt(0).toUpperCase() }}
+        </div>
+        <div class="hidden lg:block leading-tight">
+          <span class="text-xs font-bold block truncate max-w-[130px]">{{ user.email }}</span>
+          <span class="text-[10px] opacity-70 font-medium block truncate max-w-[130px]">{{ authService.designationName()
+            }}</span>
+        </div>
+      </button>
+
+      <!-- Profile Dropdown Menu -->
+      @if (showProfileMenu()) {
+      <div
+        class="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 text-slate-800 animate-in fade-in duration-150">
+        <div class="px-4 py-2.5 border-b border-slate-100">
+          <p class="text-xs font-bold text-slate-900 truncate">{{ user.email }}</p>
+          <p class="text-[11px] text-slate-500 capitalize">{{ authService.primaryRole() }} · {{
+            authService.designationName() }}</p>
+        </div>
+
+        <div class="py-1">
+          <button type="button" (click)="toggleTheme(); showProfileMenu.set(false)"
+            class="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-between transition cursor-pointer">
+            <div class="flex items-center gap-2.5">
+              @if (themeService.colorMode() === 'dark') {
+                <svg lucideSun class="w-4 h-4 text-amber-500" />
+                <span>Switch to Light</span>
+              } @else {
+                <svg lucideMoon class="w-4 h-4 text-slate-600" />
+                <span>Switch to Dark</span>
+              }
+            </div>
+            <span class="text-[10px] text-slate-400 font-mono uppercase">{{ themeService.colorMode() }}</span>
+          </button>
+
+          <a [routerLink]="themeStyleRoute()" (click)="showProfileMenu.set(false)"
+            class="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+            <svg lucidePalette class="w-4 h-4 text-emerald-600" />
+            <span>Theme Style & Personalize</span>
+          </a>
+
+          <a [routerLink]="'/' + authService.primaryRole() + '/setupmodule'" (click)="showProfileMenu.set(false)"
+            class="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+            <svg lucideSlidersHorizontal class="w-4 h-4 text-blue-600" />
+            <span>Setup Module Options</span>
+          </a>
+        </div>
+
+        <div class="border-t border-slate-100 pt-1">
+          <button type="button" (click)="handleLogout(); showProfileMenu.set(false)"
+            class="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition cursor-pointer">
+            <svg lucideLogOut class="w-4 h-4" />
+            <span>Log Out</span>
+          </button>
+        </div>
       </div>
-      <div class="hidden lg:block text-left leading-tight">
-        <span class="text-xs font-semibold text-gray-800 block truncate max-w-[140px]">{{ user.email }}</span>
-        <span class="text-[10px] text-gray-500 font-medium block">{{ authService.designationName() }}</span>
-      </div>
+      }
     </div>
     }
   </div>
 
+  <!-- Mobile Search Drawer -->
   @if (showMobileSearch()) {
-  <div class="absolute top-14 left-0 right-0 bg-white p-3 shadow-md md:hidden z-40 border-b border-gray-200">
+  <div
+    class="absolute top-14 left-0 right-0 bg-white p-3 shadow-md md:hidden z-40 border-b border-gray-200 text-slate-800">
     <div class="relative">
-      <input type="text" placeholder="Search HRMS..."
-        class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+      <input type="text" placeholder="Search pages..."
+        class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2"
         [value]="searchQuery()" (input)="handleSearch($any($event.target).value)" (keydown)="handleKeyPress($event)"
         autofocus />
-      <svg lucideSearch class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <svg lucideSearch class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
     </div>
 
     @if (showResults()) {
     <div class="mt-2 bg-white rounded-lg border border-gray-200 max-h-64 overflow-y-auto">
-      <div class="p-2">
-        @if (noResults()) {
-        <div class="flex flex-col items-center justify-center py-6 text-gray-400">
-          <svg lucideSearch class="w-7 h-7 mb-2 opacity-40" />
-          <div class="text-sm font-medium">No results found</div>
-          <div class="text-xs mt-1">Try a different search term</div>
-        </div>
-        } @else {
-        <div class="text-xs font-semibold text-gray-500 px-2 py-1.5 border-b border-gray-100">
-          {{ searchResults().length }} results found
-        </div>
-        <div class="space-y-1 pt-1">
-          @for (result of searchResults(); track result.id) {
-          <button type="button" class="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-md transition-colors"
-            (click)="handleResultClick(result.route)">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="font-medium text-gray-900 text-sm">{{ result.title }}</div>
-                <div class="text-xs text-gray-500 mt-0.5">{{ result.category }}</div>
-              </div>
-            </div>
-          </button>
-          }
-        </div>
-        }
-      </div>
+      @for (result of searchResults(); track result.id) {
+      <button type="button"
+        class="w-full text-left px-3 py-2 text-xs font-medium text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+        (click)="handleResultClick(result.route)">
+        <span>{{ result.title }}</span>
+        <span class="text-slate-400">{{ result.category }}</span>
+      </button>
+      }
     </div>
     }
   </div>

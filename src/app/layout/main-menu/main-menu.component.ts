@@ -18,6 +18,7 @@ import {
   LucideArrowRight,
   LucideTruck,
   LucideLayoutGrid,
+  LucidePalette,
 } from '@lucide/angular';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -56,6 +57,7 @@ export interface MainMenuCategory {
     LucideArrowRight,
     LucideTruck,
     LucideLayoutGrid,
+    LucidePalette,
   ],
   templateUrl: './main-menu.component.html',
   styleUrl: './main-menu.component.css',
@@ -305,6 +307,12 @@ export class MainMenuComponent implements OnInit, OnDestroy {
     const role = this.authService.primaryRole() || 'admin';
     const cleanRoute = route.startsWith('/') ? route : `/${route}`;
     this.router.navigateByUrl(`/${role}${cleanRoute}`);
+    this.handleClose();
+  }
+
+  navigateToTheme(): void {
+    const role = this.authService.primaryRole() || 'admin';
+    this.router.navigateByUrl(`/${role}/theme-style`);
     this.handleClose();
   }
 

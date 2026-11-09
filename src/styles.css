@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
 @import 'toastify-js/src/toastify.css';
 
 /* Custom scrollbar utility */
@@ -56,9 +57,12 @@
 /* Success Toast */
 .toastify-custom-success {
   background: #ffffff !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
-  border-left: 5px solid #10b981 !important;
-  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15) !important;
+  border-color: var(--fs-accent-light-border, rgba(16, 185, 129, 0.4)) !important;
+  border-left: 5px solid var(--fs-accent, #10b981) !important;
+  box-shadow: 0 10px 25px -5px var(--fs-accent-ring, rgba(16, 185, 129, 0.15)) !important;
+}
+.toastify-custom-success .fs-toast-icon svg {
+  stroke: var(--fs-accent, #10b981) !important;
 }
 
 /* Error Toast */
@@ -80,9 +84,12 @@
 /* Info Toast */
 .toastify-custom-info {
   background: #ffffff !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  border-left: 5px solid #3b82f6 !important;
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15) !important;
+  border-color: var(--fs-accent-light-border, rgba(59, 130, 246, 0.4)) !important;
+  border-left: 5px solid var(--fs-accent, #3b82f6) !important;
+  box-shadow: 0 10px 25px -5px var(--fs-accent-ring, rgba(59, 130, 246, 0.15)) !important;
+}
+.toastify-custom-info .fs-toast-icon svg {
+  stroke: var(--fs-accent, #3b82f6) !important;
 }
 
 /* Toast Body Elements */
@@ -114,4 +121,383 @@
   line-height: 1.45;
   margin: 0;
   word-break: break-word;
+}
+
+
+/* =============================================================================
+   Dynamic Theme Personalization & CSS Variables
+   ============================================================================= */
+:root {
+  --fs-accent: #187f65;
+  --fs-accent-hover: #136652;
+  --fs-accent-active: #0e4c3d;
+  --fs-accent-light: rgba(24, 127, 101, 0.08);
+  --fs-accent-light-border: rgba(24, 127, 101, 0.35);
+  --fs-accent-ring: rgba(24, 127, 101, 0.25);
+  --fs-font-family: 'Plus Jakarta Sans', sans-serif;
+
+  /* Bridge Tailwind v4 Blue tokens directly to the active accent */
+  --color-blue-50: var(--fs-accent-light);
+  --color-blue-100: rgba(24, 127, 101, 0.14);
+  --color-blue-200: rgba(24, 127, 101, 0.22);
+  --color-blue-300: var(--fs-accent-light-border);
+  --color-blue-400: #20997b;
+  --color-blue-500: var(--fs-accent);
+  --color-blue-600: var(--fs-accent);
+  --color-blue-700: var(--fs-accent-hover);
+  --color-blue-800: var(--fs-accent-active);
+  --color-blue-900: #0a382c;
+  --color-blue-950: #052019;
+}
+
+body {
+  font-family: var(--fs-font-family);
+  transition: font-family 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Font Families */
+.font-plus-jakarta-sans, [data-font="Plus Jakarta Sans"] { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+.font-inter, [data-font="Inter"] { font-family: 'Inter', sans-serif !important; }
+.font-poppins, [data-font="Poppins"] { font-family: 'Poppins', sans-serif !important; }
+.font-roboto, [data-font="Roboto"] { font-family: 'Roboto', sans-serif !important; }
+.font-outfit, [data-font="Outfit"] { font-family: 'Outfit', sans-serif !important; }
+.font-system-font, [data-font="System font"] { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+
+/* Dynamic Accent Colors */
+.bg-fs-accent { background-color: var(--fs-accent) !important; }
+.bg-fs-accent-hover:hover { background-color: var(--fs-accent-hover) !important; }
+.bg-fs-accent-light { background-color: var(--fs-accent-light) !important; }
+.text-fs-accent { color: var(--fs-accent) !important; }
+.text-fs-accent-hover:hover { color: var(--fs-accent-hover) !important; }
+.border-fs-accent { border-color: var(--fs-accent) !important; }
+.ring-fs-accent:focus { --tw-ring-color: var(--fs-accent-ring) !important; }
+
+/* =============================================================================
+   Global Dynamic Accent Cascade for Standard UI Components
+   Ensures buttons, badges, breadcrumbs, checkboxes, tables, dropdowns, and
+   active links throughout FleetSphere adopt the user's chosen accent color.
+   ============================================================================= */
+.bg-blue-600, .bg-blue-500 {
+  background-color: var(--fs-accent) !important;
+}
+.hover\:bg-blue-700:hover, .hover\:bg-blue-600:hover {
+  background-color: var(--fs-accent-hover) !important;
+}
+.active\:bg-blue-800:active {
+  background-color: var(--fs-accent-active) !important;
+}
+.text-blue-600, .text-blue-500 {
+  color: var(--fs-accent) !important;
+}
+.hover\:text-blue-600:hover, .hover\:text-blue-700:hover, .hover\:text-blue-800:hover {
+  color: var(--fs-accent-hover) !important;
+}
+.border-blue-600, .border-blue-500 {
+  border-color: var(--fs-accent) !important;
+}
+.border-blue-300, .border-blue-200 {
+  border-color: var(--fs-accent-light-border) !important;
+}
+.bg-blue-50, .bg-blue-100 {
+  background-color: var(--fs-accent-light) !important;
+}
+.hover\:bg-blue-50:hover, .hover\:bg-blue-100:hover {
+  background-color: var(--fs-accent-light) !important;
+}
+.focus\:ring-blue-500:focus, .focus\:ring-blue-400:focus, .focus\:ring-blue-600:focus {
+  --tw-ring-color: var(--fs-accent-ring) !important;
+}
+.focus\:border-blue-500:focus, .focus\:border-blue-600:focus {
+  border-color: var(--fs-accent) !important;
+}
+.accent-blue-600 {
+  accent-color: var(--fs-accent) !important;
+}
+
+/* Header Color: Dark */
+.header-dark {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.header-dark input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+.header-dark input:focus {
+  border-color: var(--fs-accent) !important;
+  box-shadow: 0 0 0 2px var(--fs-accent-ring) !important;
+}
+.header-dark input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+.header-dark button, .header-dark a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.header-dark button:hover, .header-dark a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Header Color: Light */
+.header-light {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+.header-light input:focus {
+  border-color: var(--fs-accent) !important;
+  box-shadow: 0 0 0 2px var(--fs-accent-ring) !important;
+}
+
+/* Sidebar Menu Color: Dark */
+.menu-dark {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.menu-dark .border-b, .menu-dark .border-t {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.menu-dark a, .menu-dark button {
+  color: rgba(241, 245, 249, 0.75) !important;
+}
+.menu-dark a:hover, .menu-dark button:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+.menu-dark .text-gray-400, .menu-dark .text-gray-500, .menu-dark .text-gray-600 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+.menu-dark .text-gray-900, .menu-dark .text-gray-800 {
+  color: #ffffff !important;
+}
+.menu-dark .bg-slate-50 {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+/* Active link inside dark sidebar */
+.menu-dark a.bg-blue-100,
+.menu-dark a[class*="bg-blue-100"] {
+  background-color: var(--fs-accent) !important;
+  color: #ffffff !important;
+}
+.menu-dark a.bg-blue-100 svg,
+.menu-dark a[class*="bg-blue-100"] svg {
+  color: #ffffff !important;
+}
+
+/* Sidebar Menu Color: Light */
+.menu-light {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-right: 1px solid #e2e8f0 !important;
+}
+/* Active link inside light sidebar */
+.menu-light a.bg-blue-100,
+.menu-light a[class*="bg-blue-100"] {
+  background-color: var(--fs-accent-light) !important;
+  color: var(--fs-accent) !important;
+}
+.menu-light a.bg-blue-100 svg,
+.menu-light a[class*="bg-blue-100"] svg {
+  color: var(--fs-accent) !important;
+}
+
+
+/* =============================================================================
+   Comprehensive FleetSphere Dark Theme
+   Activated across all pages when <html class="dark"> or <body class="dark">
+   ============================================================================= */
+html.dark,
+body.dark {
+  color-scheme: dark;
+}
+
+html.dark body,
+body.dark {
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Page Backgrounds & Wrappers */
+html.dark .min-h-screen,
+html.dark main,
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80 {
+  background-color: #0b0f19 !important;
+  color: #f1f5f9 !important;
+}
+
+/* White Panels, Cards, Dialogs, Dropdown Menus */
+html.dark .bg-white:not([class*="bg-blue"]):not([class*="bg-fs"]) {
+  background-color: #111827 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Gradient backgrounds in cards/headers */
+html.dark .from-slate-50,
+html.dark .via-white,
+html.dark .to-slate-50 {
+  --tw-gradient-from: #111827 !important;
+  --tw-gradient-via: #111827 !important;
+  --tw-gradient-to: #111827 !important;
+}
+
+/* Border Overrides in Dark Mode */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/90,
+html.dark .border-slate-300,
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-200\/60,
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Headings and Primary Typography */
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f8fafc !important;
+}
+
+/* Secondary Typography */
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+/* Muted & Helper Typography */
+html.dark .text-slate-500,
+html.dark .text-slate-400,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+/* Form Inputs, Dropdown Inputs, Native Selects */
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark input[type="number"],
+html.dark input[type="search"],
+html.dark select,
+html.dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Tables in Dark Mode */
+html.dark table thead,
+html.dark table thead th {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark table tbody tr {
+  background-color: #111827 !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+html.dark table tbody td {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Table Pagination & Footers */
+html.dark .border-t.bg-white,
+html.dark .border-b.bg-white {
+  background-color: #111827 !important;
+}
+
+/* Secondary/Neutral Buttons */
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Popups, Dropdown Flyouts & Overlays */
+html.dark .shadow-2xl,
+html.dark .shadow-xl,
+html.dark .shadow-lg,
+html.dark .shadow-md {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Header in Dark Mode (when headerColor is set to light) */
+html.dark .header-light {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html.dark .header-light input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+html.dark .header-light button,
+html.dark .header-light a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+html.dark .header-light button:hover,
+html.dark .header-light a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Sidebar in Dark Mode (when menuColor is set to light) */
+html.dark .menu-light {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html.dark .menu-light a {
+  color: #cbd5e1 !important;
+}
+html.dark .menu-light a:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+html.dark .menu-light .border-b,
+html.dark .menu-light .border-t {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dropdown component (.app-dropdown) flyout menu in dark mode */
+html.dark .app-dropdown-menu,
+html.dark [class*="max-h-60"][class*="bg-white"],
+html.dark [class*="absolute top-full"][class*="bg-white"] {
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
 }

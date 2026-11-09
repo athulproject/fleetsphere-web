@@ -10,6 +10,7 @@ import { UserManagementListComponent } from './user-management/user-management-l
 import { UserManagementFormComponent } from './user-management/user-management-form.component';
 import { SetupModuleComponent } from './setup-module/setup-module.component';
 import { ControlPanelComponent } from './control-panel/control-panel.component';
+import { ThemeStyleComponent } from './theme-style/theme-style.component';
 import { authGuard } from './core/guards/auth.guard';
 import { AuthService } from './core/services/auth.service';
 
@@ -22,6 +23,8 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardHandler },
+      { path: 'theme-style', component: ThemeStyleComponent },
+      { path: 'personalize', redirectTo: 'theme-style', pathMatch: 'full' },
       { path: 'setupmodule', component: SetupModuleComponent },
       { path: 'setup-module', redirectTo: 'setupmodule', pathMatch: 'full' },
       { path: 'ctrl_panel', component: ControlPanelComponent },
@@ -146,6 +149,22 @@ export const routes: Routes = [
       const id = route.params['id'];
       return `${auth.primaryRole()}/master/${code}/edit/${id}`;
     },
+  },
+  {
+    path: 'theme-style',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/theme-style`;
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'personalize',
+    redirectTo: () => {
+      const auth = inject(AuthService);
+      return `${auth.primaryRole()}/theme-style`;
+    },
+    pathMatch: 'full',
   },
   { path: '**', redirectTo: '' },
 ];

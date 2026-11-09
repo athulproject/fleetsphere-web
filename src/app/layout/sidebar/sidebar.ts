@@ -28,6 +28,7 @@ import {
   LucideTruck,
   LucideLayers,
   LucideSlidersHorizontal,
+  LucidePalette,
 } from '@lucide/angular';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -64,6 +65,7 @@ export interface MenuItem {
     LucideStar,
     LucideLogOut,
     LucideTruck,
+    LucidePalette,
   ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
@@ -92,6 +94,7 @@ export class Sidebar implements OnInit {
   // Dynamic role prefix (e.g. /admin, /manager)
   rolePrefix = computed(() => `/${this.authService.primaryRole()}`);
   currentBasePath = computed(() => `${this.rolePrefix()}/dashboard`);
+  themeStyleRoute = computed(() => `${this.rolePrefix()}/theme-style`);
 
   getRoleRoute(path: string): string {
     const cleanPath = path.startsWith('/') ? path : `/${path}`;

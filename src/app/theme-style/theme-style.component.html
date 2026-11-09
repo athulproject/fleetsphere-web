@@ -1,0 +1,468 @@
+<div class="space-y-6 pb-12">
+  <!-- Breadcrumbs -->
+  <app-breadcrumb [items]="breadcrumbItems" title="Theme Style & Personalization"
+    description="Customize header and menu colors, workspace navigation layouts, fonts, and accent highlights.">
+  </app-breadcrumb>
+
+  <!-- Main Card -->
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <!-- Configuration Body -->
+    <div class="p-8 space-y-10">
+
+      <!-- =================================================================== -->
+      <!-- SECTION 1: HEADER & MENU                                            -->
+      <!-- =================================================================== -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Header & menu</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Choose each independently. The sun/moon toggle controls the overall page color mode.
+            </p>
+          </div>
+
+          <!-- Page Color Mode (Sun / Moon) -->
+          <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+            <button type="button" (click)="setColorMode('light')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+              [ngClass]="themeService.colorMode() === 'light' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'">
+              <svg lucideSun class="w-4 h-4 text-amber-500" />
+              Light Mode
+            </button>
+            <button type="button" (click)="setColorMode('dark')"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+              [ngClass]="themeService.colorMode() === 'dark' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'">
+              <svg lucideMoon class="w-4 h-4 text-blue-400" />
+              Dark Mode
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+
+          <!-- Header color selection -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+              Header color
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Dark Header Option -->
+              <button type="button" (click)="setHeaderColor('dark')"
+                class="p-4 rounded-xl border text-left transition cursor-pointer relative" [ngClass]="themeService.headerColor() === 'dark'
+                  ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+                <!-- Visual miniature -->
+                <div
+                  class="w-full h-7 rounded-md bg-slate-950 mb-3 border border-slate-800 flex items-center px-2 justify-between">
+                  <div class="w-3 h-1.5 bg-slate-700 rounded-xs"></div>
+                  <div class="w-10 h-1.5 bg-slate-800 rounded-xs"></div>
+                  <div class="w-2.5 h-2.5 bg-slate-700 rounded-full"></div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm font-bold block"
+                      [ngClass]="themeService.headerColor() === 'dark' ? 'text-white' : 'text-slate-800'">Dark</span>
+                    <span class="text-[11px]"
+                      [ngClass]="themeService.headerColor() === 'dark' ? 'text-slate-300' : 'text-slate-400'">Sleek
+                      obsidian top bar</span>
+                  </div>
+                  @if (themeService.headerColor() === 'dark') {
+                  <svg lucideCheck class="w-4 h-4 text-emerald-400 shrink-0" />
+                  }
+                </div>
+              </button>
+
+              <!-- Light Header Option -->
+              <button type="button" (click)="setHeaderColor('light')"
+                class="p-4 rounded-xl border text-left transition cursor-pointer relative" [ngClass]="themeService.headerColor() === 'light'
+                  ? 'border-slate-900 bg-slate-50 text-slate-900 shadow-md ring-2 ring-slate-900/20'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+                <!-- Visual miniature -->
+                <div
+                  class="w-full h-7 rounded-md bg-white mb-3 border border-slate-200 flex items-center px-2 justify-between shadow-xs">
+                  <div class="w-3 h-1.5 bg-slate-300 rounded-xs"></div>
+                  <div class="w-10 h-1.5 bg-slate-200 rounded-xs"></div>
+                  <div class="w-2.5 h-2.5 bg-slate-300 rounded-full"></div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm font-bold block text-slate-800">Light</span>
+                    <span class="text-[11px] text-slate-400">Clean white top bar</span>
+                  </div>
+                  @if (themeService.headerColor() === 'light') {
+                  <svg lucideCheck class="w-4 h-4 text-emerald-600 shrink-0" />
+                  }
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Menu color selection -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+              Menu color
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Light Menu Option -->
+              <button type="button" (click)="setMenuColor('light')"
+                class="p-4 rounded-xl border text-left transition cursor-pointer relative" [ngClass]="themeService.menuColor() === 'light'
+                  ? 'border-slate-900 bg-slate-50 text-slate-900 shadow-md ring-2 ring-slate-900/20'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+                <!-- Visual miniature -->
+                <div class="w-full h-7 rounded-md bg-white mb-3 border border-slate-200 flex overflow-hidden shadow-xs">
+                  <div class="w-4 h-full bg-slate-100 border-r border-slate-200"></div>
+                  <div class="flex-1 bg-slate-50 p-1 flex flex-col gap-1">
+                    <div class="w-6 h-1 bg-slate-200 rounded-xs"></div>
+                    <div class="w-10 h-1 bg-slate-200 rounded-xs"></div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm font-bold block text-slate-800">Light</span>
+                    <span class="text-[11px] text-slate-400">Bright clean navigation</span>
+                  </div>
+                  @if (themeService.menuColor() === 'light') {
+                  <svg lucideCheck class="w-4 h-4 text-emerald-600 shrink-0" />
+                  }
+                </div>
+              </button>
+
+              <!-- Dark Menu Option -->
+              <button type="button" (click)="setMenuColor('dark')"
+                class="p-4 rounded-xl border text-left transition cursor-pointer relative" [ngClass]="themeService.menuColor() === 'dark'
+                  ? 'border-slate-900 bg-slate-900 text-white shadow-md ring-2 ring-slate-900/20'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+                <!-- Visual miniature -->
+                <div class="w-full h-7 rounded-md bg-slate-950 mb-3 border border-slate-800 flex overflow-hidden">
+                  <div class="w-4 h-full bg-slate-900 border-r border-slate-800"></div>
+                  <div class="flex-1 bg-slate-900/50 p-1 flex flex-col gap-1">
+                    <div class="w-6 h-1 bg-slate-800 rounded-xs"></div>
+                    <div class="w-10 h-1 bg-slate-800 rounded-xs"></div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm font-bold block"
+                      [ngClass]="themeService.menuColor() === 'dark' ? 'text-white' : 'text-slate-800'">Dark</span>
+                    <span class="text-[11px]"
+                      [ngClass]="themeService.menuColor() === 'dark' ? 'text-slate-300' : 'text-slate-400'">High
+                      contrast dark sidebar</span>
+                  </div>
+                  @if (themeService.menuColor() === 'dark') {
+                  <svg lucideCheck class="w-4 h-4 text-emerald-400 shrink-0" />
+                  }
+                </div>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 2: WORKSPACE LAYOUT                                         -->
+      <!-- =================================================================== -->
+      <section class="space-y-4 pt-4 border-t border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Workspace layout</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Configure the layout structure of your workspace. Applies to all pages. Small screens use a navigation
+            drawer.
+          </p>
+        </div>
+
+        <!-- Layout Dropdown Selector -->
+        <div class="max-w-md space-y-1.5">
+          <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+            Layout
+          </label>
+          <app-dropdown [options]="layoutDropdownOptions" [value]="themeService.layout()" [showSearch]="false"
+            [clearable]="false" placeholder="Select workspace layout" (selectionChange)="setLayout($event)">
+          </app-dropdown>
+          <p class="text-[11px] text-slate-400">
+            Applies to all workspace pages. Small screens use a navigation drawer.
+          </p>
+        </div>
+
+        <!-- Quick Layouts Mini Cards -->
+        <div class="space-y-2 pt-2">
+          <span class="block text-xs font-semibold text-slate-600">Quick layouts</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+            <!-- Quick: Sidebar -->
+            <button type="button" (click)="setLayout('sidebar')"
+              class="p-3.5 rounded-xl border text-center transition cursor-pointer group" [ngClass]="themeService.layout() === 'sidebar'
+                ? 'border-slate-900 bg-slate-900 text-white shadow-sm ring-1 ring-slate-900'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+              <div class="w-full h-12 rounded-lg bg-slate-100 mb-2.5 flex overflow-hidden border border-slate-200/80">
+                <div class="w-3.5 h-full" [style.background-color]="themeService.accentColor()"></div>
+                <div class="flex-1 p-1 bg-white flex flex-col gap-1">
+                  <div class="w-full h-1.5 bg-slate-200 rounded-xs"></div>
+                  <div class="w-3/4 h-1.5 bg-slate-100 rounded-xs"></div>
+                </div>
+              </div>
+              <span class="text-xs font-bold block"
+                [ngClass]="themeService.layout() === 'sidebar' ? 'text-white' : 'text-slate-800'">Sidebar</span>
+              <span class="text-[10px]"
+                [ngClass]="themeService.layout() === 'sidebar' ? 'text-slate-300' : 'text-slate-400'">Standard left
+                dock</span>
+            </button>
+
+            <!-- Quick: Top Menu -->
+            <button type="button" (click)="setLayout('top_menu')"
+              class="p-3.5 rounded-xl border text-center transition cursor-pointer group" [ngClass]="themeService.layout() === 'top_menu'
+                ? 'border-slate-900 bg-slate-900 text-white shadow-sm ring-1 ring-slate-900'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+              <div
+                class="w-full h-12 rounded-lg bg-slate-100 mb-2.5 flex flex-col overflow-hidden border border-slate-200/80">
+                <div class="w-full h-2.5 flex items-center px-1 gap-1"
+                  [style.background-color]="themeService.accentColor()">
+                  <div class="w-2 h-1 bg-white/70 rounded-xs"></div>
+                  <div class="w-2 h-1 bg-white/70 rounded-xs"></div>
+                </div>
+                <div class="flex-1 p-1.5 bg-white flex flex-col gap-1">
+                  <div class="w-full h-1.5 bg-slate-100 rounded-xs"></div>
+                  <div class="w-1/2 h-1.5 bg-slate-100 rounded-xs"></div>
+                </div>
+              </div>
+              <span class="text-xs font-bold block"
+                [ngClass]="themeService.layout() === 'top_menu' ? 'text-white' : 'text-slate-800'">Top menu</span>
+              <span class="text-[10px]"
+                [ngClass]="themeService.layout() === 'top_menu' ? 'text-slate-300' : 'text-slate-400'">Horizontal
+                header</span>
+            </button>
+
+            <!-- Quick: Dual Sidebar -->
+            <button type="button" (click)="setLayout('dual_sidebar')"
+              class="p-3.5 rounded-xl border text-center transition cursor-pointer group" [ngClass]="themeService.layout() === 'dual_sidebar'
+                ? 'border-slate-900 bg-slate-900 text-white shadow-sm ring-1 ring-slate-900'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+              <div class="w-full h-12 rounded-lg bg-slate-100 mb-2.5 flex overflow-hidden border border-slate-200/80">
+                <div class="w-2.5 h-full" [style.background-color]="themeService.accentColor()"></div>
+                <div class="w-4 h-full bg-slate-200 border-r border-slate-300"></div>
+                <div class="flex-1 p-1 bg-white flex flex-col gap-1">
+                  <div class="w-full h-1.5 bg-slate-100 rounded-xs"></div>
+                </div>
+              </div>
+              <span class="text-xs font-bold block"
+                [ngClass]="themeService.layout() === 'dual_sidebar' ? 'text-white' : 'text-slate-800'">Dual
+                Sidebar</span>
+              <span class="text-[10px]"
+                [ngClass]="themeService.layout() === 'dual_sidebar' ? 'text-slate-300' : 'text-slate-400'">2-Tier
+                dock</span>
+            </button>
+
+            <!-- Quick: Minimal Header -->
+            <button type="button" (click)="setLayout('minimal')"
+              class="p-3.5 rounded-xl border text-center transition cursor-pointer group" [ngClass]="themeService.layout() === 'minimal'
+                ? 'border-slate-900 bg-slate-900 text-white shadow-sm ring-1 ring-slate-900'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+              <div
+                class="w-full h-12 rounded-lg bg-slate-100 mb-2.5 flex flex-col overflow-hidden border border-slate-200/80">
+                <div class="w-full h-1.5 bg-slate-300"></div>
+                <div class="flex-1 p-2 bg-white flex items-center justify-center">
+                  <div class="w-8 h-4 rounded-xs border border-dashed border-slate-300"></div>
+                </div>
+              </div>
+              <span class="text-xs font-bold block"
+                [ngClass]="themeService.layout() === 'minimal' ? 'text-white' : 'text-slate-800'">Minimal</span>
+              <span class="text-[10px]"
+                [ngClass]="themeService.layout() === 'minimal' ? 'text-slate-300' : 'text-slate-400'">Distraction-free</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Sidebar Width Option -->
+        <div class="space-y-2 pt-3">
+          <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+            Sidebar width
+          </label>
+          <div class="grid grid-cols-2 max-w-sm gap-3">
+            <button type="button" (click)="setSidebarWidth('expanded')"
+              class="px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-between cursor-pointer"
+              [ngClass]="themeService.sidebarWidth() === 'expanded'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'">
+              <span>Expanded</span>
+              @if (themeService.sidebarWidth() === 'expanded') {
+              <svg lucideCheck class="w-3.5 h-3.5 text-emerald-400" />
+              }
+            </button>
+
+            <button type="button" (click)="setSidebarWidth('collapsed')"
+              class="px-4 py-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-between cursor-pointer"
+              [ngClass]="themeService.sidebarWidth() === 'collapsed'
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'">
+              <span>Collapsed</span>
+              @if (themeService.sidebarWidth() === 'collapsed') {
+              <svg lucideCheck class="w-3.5 h-3.5 text-emerald-400" />
+              }
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">
+            Remembered when you return to the sidebar. Small screens use a navigation drawer.
+          </p>
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 3: FONT STYLE                                               -->
+      <!-- =================================================================== -->
+      <section class="space-y-4 pt-4 border-t border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Font style</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Select typography that gives your workspace a clear, modern feel.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+
+          <!-- Font Family Selector -->
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1.5">
+                Font family
+              </label>
+              <app-dropdown [options]="fontDropdownOptions" [value]="themeService.fontFamily()" [showSearch]="false"
+                [clearable]="false" placeholder="Select font family" (selectionChange)="setFontFamily($event)">
+              </app-dropdown>
+            </div>
+
+            <!-- Quick Pill Buttons for Fonts -->
+            <div class="flex flex-wrap gap-2">
+              @for (f of fontOptions; track f.value) {
+              <button type="button" (click)="setFontFamily(f.value)"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer" [ngClass]="themeService.fontFamily() === f.value
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-white'">
+                {{ f.value }}
+              </button>
+              }
+            </div>
+
+            <p class="text-[11px] text-slate-400">
+              Applies to headings, menus, and fields. System fonts vary by device.
+            </p>
+          </div>
+
+          <!-- Live Typography Preview Box -->
+          <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3"
+            [style.font-family]="themeService.fontFamily()">
+            <div
+              class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span>Preview</span>
+              <span class="text-slate-600 font-mono">{{ themeService.fontFamily() }}</span>
+            </div>
+
+            <div class="text-lg font-extrabold text-slate-900 tracking-tight">
+              Your workspace, your style.
+            </div>
+
+            <div class="text-sm font-medium text-slate-600 tracking-wide">
+              Aa Bb Cc · 0123456789
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed">
+              The quick brown fox jumps over the lazy dog. Heavy fleet logistics dispatches with optimized route
+              turnarounds and automated shift roster validation.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 4: ACCENT COLOR                                             -->
+      <!-- =================================================================== -->
+      <section class="space-y-4 pt-4 border-t border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Accent color</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Used for highlights and selections. Shades adapt to keep text readable.
+          </p>
+        </div>
+
+        <!-- Preset Palettes -->
+        <div class="space-y-2">
+          <span class="block text-xs font-semibold text-slate-600">Preset color palettes</span>
+          <div class="flex flex-wrap items-center gap-3">
+            @for (p of palettes; track p.hex) {
+            <button type="button" (click)="selectAccent(p.hex)"
+              class="w-10 h-10 rounded-full transition transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-xs border-2"
+              [style.background-color]="p.hex"
+              [style.border-color]="themeService.accentColor() === p.hex ? '#0f172a' : 'transparent'"
+              [title]="p.name + ' (' + p.hex + ')'">
+              @if (themeService.accentColor() === p.hex) {
+              <svg lucideCheck class="w-5 h-5 text-white drop-shadow-sm" />
+              }
+            </button>
+            }
+          </div>
+        </div>
+
+        <!-- Custom Hex Input -->
+        <div class="max-w-md space-y-2 pt-2">
+          <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+            Custom Hex color
+          </label>
+
+          <div class="flex items-center gap-2">
+            <!-- Color Swatch / Native Picker -->
+            <div class="relative w-11 h-10 rounded-xl overflow-hidden border border-slate-300 shrink-0 shadow-xs">
+              <input type="color" [ngModel]="themeService.accentColor()" (ngModelChange)="selectAccent($event)"
+                class="absolute inset-0 w-16 h-16 -top-2 -left-2 cursor-pointer border-0" />
+            </div>
+
+            <!-- Hex Text Input -->
+            <div class="relative flex-1">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">
+                #
+              </span>
+              <input type="text" [ngModel]="customHex().replace('#', '')" (ngModelChange)="customHex.set('#' + $event)"
+                placeholder="187f65" maxlength="7"
+                class="w-full pl-8 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-xl outline-none text-slate-800 font-mono font-medium focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition" />
+            </div>
+
+            <!-- Apply Button -->
+            <button type="button" (click)="applyCustomHex()"
+              class="px-5 py-2 text-xs font-bold text-white rounded-xl transition cursor-pointer shadow-xs hover:opacity-95"
+              [style.background-color]="themeService.accentColor()">
+              Apply
+            </button>
+          </div>
+
+          <p class="text-[11px] text-slate-400">
+            Enter any hex code (e.g. #187f65). Highlight shades and hover tones adapt automatically.
+          </p>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Bottom Footer Bar -->
+    <div class="px-8 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+      <div class="text-xs text-slate-400 font-medium">
+        Changes take effect immediately across all workspace views.
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="button" (click)="resetDefaults()"
+          class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer">
+          Reset to default
+        </button>
+
+        <button type="button" (click)="saveChanges()"
+          class="px-5 py-2 text-xs font-bold text-white rounded-md transition shadow-xs cursor-pointer"
+          [style.background-color]="themeService.accentColor()">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

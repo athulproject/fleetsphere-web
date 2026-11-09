@@ -79,6 +79,12 @@ export class SetupModuleComponent implements OnInit {
         iconColorClass: 'text-blue-500',
         cards: [
           {
+            title: 'Theme Style & Personalization',
+            route: `/${r}/theme-style`,
+            badge: 'Theme',
+            description: 'Workspace layout, header/menu colors, font typography, and accent highlights',
+          },
+          {
             title: 'Control Panel Setting',
             route: `/${r}/ctrl_panel`,
             description: 'Central dynamic module operational policies and rule manager',

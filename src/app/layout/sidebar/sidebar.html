@@ -6,8 +6,8 @@
   </a>
   <div class="flex items-center gap-2">
     <button (click)="toggleTheme()"
-      class="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer" type="button"
-      title="Toggle Theme">
+      class="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+      type="button" title="Toggle Theme">
       @if (isDark()) {
       <svg lucideSun class="w-5 h-5" />
       } @else {
@@ -15,18 +15,23 @@
       }
     </button>
     <button (click)="setOpenMenu(true)" type="button"
-      class="p-1.5 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer" title="Open Navigation Menu">
+      class="p-1.5 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+      title="Open Navigation Menu">
       <svg lucideGrid3X3 [size]="28" />
     </button>
   </div>
 </div>
 
-<div
-  class="fixed top-0 left-0 h-full bg-white border-r border-gray-300 shadow-md z-40 transition-all duration-300 lg:translate-x-0"
-  [ngClass]="[ isMobileOpen() ? 'translate-x-0' : '-translate-x-full', (isCollapsed() && !isMobile()) ? 'w-20' : 'w-64']">
-  <div class="flex items-center justify-between p-4 border-b border-gray-300" [style.padding-bottom]="isCollapsed() ? '10px' : '4px'">
-    <div class="flex items-center cursor-pointer ml-1" [ngClass]="isCollapsed() ? 'w-8 h-8 justify-center' : ''" (mouseenter)="isLogoHovered.set(true)"
-      (mouseleave)="isLogoHovered.set(false)" (click)="isCollapsed() ? handleToggle() : null">
+<div class="fixed top-0 left-0 h-full border-r shadow-md z-40 transition-all duration-300 lg:translate-x-0" [ngClass]="[
+    isMobileOpen() ? 'translate-x-0' : '-translate-x-full',
+    (isCollapsed() && !isMobile()) ? 'w-20' : 'w-64',
+    themeService.menuColor() === 'dark' ? 'menu-dark' : 'menu-light'
+  ]">
+  <div class="flex items-center justify-between p-4 border-b border-gray-300"
+    [style.padding-bottom]="isCollapsed() ? '10px' : '4px'">
+    <div class="flex items-center cursor-pointer ml-1" [ngClass]="isCollapsed() ? 'w-8 h-8 justify-center' : ''"
+      (mouseenter)="isLogoHovered.set(true)" (mouseleave)="isLogoHovered.set(false)"
+      (click)="isCollapsed() ? handleToggle() : null">
       @if (isCollapsed()) {
       @if (isLogoHovered()) {
       <svg lucideChevronRight class="text-gray-900 w-6 h-6 transition-all duration-200" />
@@ -42,7 +47,8 @@
     </div>
 
     @if (!isCollapsed()) {
-    <button (click)="handleToggle()" class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer" type="button">
+    <button (click)="handleToggle()" class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+      type="button">
       @if (isMobile()) {
       @if (isMobileOpen()) {
       <svg lucideX class="w-5 h-5" />
@@ -127,6 +133,8 @@
         <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">{{ authService.currentUser()?.email }}</div>
       </div>
       }
+
+
       <button (click)="handleLogout()"
         class="flex items-center w-full text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition cursor-pointer"
         [ngClass]="isCollapsed() ? 'justify-center p-3' : 'px-3 py-2.5'" type="button">
