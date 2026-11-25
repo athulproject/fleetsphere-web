@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, of, map } from 'rxjs';
 import type {
   AuthCompany,
   AuthUser,
@@ -9,10 +9,6 @@ import type {
   LoginResponseData,
   ApiResponse,
 } from '../models/auth.models';
-
-const TOKEN_KEY = 'fleetsphere_auth_token';
-const USER_KEY = 'fleetsphere_auth_user';
-const TENANT_KEY = 'fleetsphere_auth_tenant';
 
 @Injectable({
   providedIn: 'root',
@@ -24,13 +20,18 @@ export class AuthService {
   // Backend API URL
   private readonly apiUrl = 'http://localhost:5000/api';
 
-  // Reactive state signals
-  public token = signal<string | null>(null);
+  // Pure in-memory reactive state signals
+  // Security Architecture:
+  // - ZERO sensitive tokens or permission lists are written to sessionStorage/localStorage.
+  // - The authentication token is held exclusively in the browser's HttpOnly cookie jar.
+  // - User details and permissions live strictly in memory (JavaScript heap) and are validated
+  //   directly against the server database on boot and on every API request.
   public currentUser = signal<AuthUser | null>(null);
   public currentTenant = signal<AuthCompany | null>(null);
+  public isVerifyingSession = signal<boolean>(false);
 
-  // Computed state
-  public isAuthenticated = computed(() => !!this.token());
+  // Computed state - authenticated when user profile is loaded in memory
+  public isAuthenticated = computed(() => !!this.currentUser());
   public permissions = computed(() => this.currentUser()?.permissions ?? []);
   public roles = computed(() => this.currentUser()?.roles ?? []);
   public userDisplayName = computed(() => {
@@ -51,42 +52,86 @@ export class AuthService {
   });
 
   constructor() {
+    this.cleanLegacyStorage();
     this.loadSession();
   }
 
   /**
-   * Restores session state from sessionStorage
+   * Cleans any legacy tokens or user items left in sessionStorage/localStorage
    */
-  public loadSession(): void {
-    if (typeof window === 'undefined' || !window.sessionStorage) return;
-
+  private cleanLegacyStorage(): void {
+    if (typeof window === 'undefined') return;
     try {
-      const storedToken = sessionStorage.getItem(TOKEN_KEY);
-      const storedUser = sessionStorage.getItem(USER_KEY);
-      const storedTenant = sessionStorage.getItem(TENANT_KEY);
-
-      if (storedToken && storedUser && storedTenant) {
-        this.token.set(storedToken);
-        this.currentUser.set(JSON.parse(storedUser));
-        this.currentTenant.set(JSON.parse(storedTenant));
-      }
-    } catch (e) {
-      console.error('[AuthService] Error restoring session:', e);
-      this.clearSession();
-    }
+      sessionStorage.removeItem('fleetsphere_auth_token');
+      sessionStorage.removeItem('fleetsphere_auth_user');
+      sessionStorage.removeItem('fleetsphere_auth_tenant');
+      localStorage.removeItem('fleetsphere_auth_token');
+    } catch {}
   }
 
   /**
-   * Authenticates user against POST /api/auth/login
+   * Loads/verifies session on app startup via the HttpOnly cookie
+   */
+  public loadSession(): void {
+    this.verifySessionWithBackend().subscribe();
+  }
+
+  /**
+   * Ensures the user is authenticated.
+   * If already loaded in memory, returns true.
+   * Otherwise, calls GET /api/auth/me to check the HttpOnly cookie with the server.
+   */
+  public ensureAuthenticated(): Observable<boolean> {
+    if (this.currentUser()) {
+      return of(true);
+    }
+    return this.verifySessionWithBackend();
+  }
+
+  /**
+   * Verifies the HttpOnly cookie against the backend /api/auth/me endpoint.
+   * Server validates the cryptographic signature and queries Postgres for active permissions.
+   */
+  public verifySessionWithBackend(): Observable<boolean> {
+    this.isVerifyingSession.set(true);
+
+    return this.http
+      .get<ApiResponse<{ user: AuthUser; company: AuthCompany }>>(`${this.apiUrl}/auth/me`, {
+        withCredentials: true,
+      })
+      .pipe(
+        map((res) => {
+          this.isVerifyingSession.set(false);
+          if (res.success && res.data) {
+            this.currentUser.set(res.data.user);
+            this.currentTenant.set(res.data.company);
+            return true;
+          }
+          this.clearSession();
+          return false;
+        }),
+        catchError(() => {
+          this.isVerifyingSession.set(false);
+          this.clearSession();
+          return of(false);
+        })
+      );
+  }
+
+  /**
+   * Authenticates user against POST /api/auth/login.
+   * The server responds with Set-Cookie: fleetsphere_token=... (HttpOnly, Secure, SameSite=Lax).
    */
   public login(req: LoginRequest): Observable<ApiResponse<LoginResponseData>> {
     return this.http
-      .post<ApiResponse<LoginResponseData>>(`${this.apiUrl}/auth/login`, req)
+      .post<ApiResponse<LoginResponseData>>(`${this.apiUrl}/auth/login`, req, {
+        withCredentials: true,
+      })
       .pipe(
         tap((res) => {
           if (res.success && res.data) {
-            const { token, user, company } = res.data;
-            this.setSession(token, user, company);
+            const { user, company } = res.data;
+            this.setSession(user, company);
           }
         }),
         catchError((err) => {
@@ -96,48 +141,55 @@ export class AuthService {
   }
 
   /**
-   * Sets authenticated session
+   * Sets authenticated session state strictly in memory (Signals)
    */
-  private setSession(token: string, user: AuthUser, company: AuthCompany): void {
-    this.token.set(token);
+  private setSession(user: AuthUser, company: AuthCompany): void {
     this.currentUser.set(user);
     this.currentTenant.set(company);
-
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      sessionStorage.setItem(TOKEN_KEY, token);
-      sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-      sessionStorage.setItem(TENANT_KEY, JSON.stringify(company));
-    }
   }
 
   /**
-   * Clears session from memory and sessionStorage
+   * Clears session from memory
    */
   private clearSession(): void {
-    this.token.set(null);
     this.currentUser.set(null);
     this.currentTenant.set(null);
-
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      sessionStorage.removeItem(TOKEN_KEY);
-      sessionStorage.removeItem(USER_KEY);
-      sessionStorage.removeItem(TENANT_KEY);
-    }
   }
 
   /**
-   * Logs out user, invokes backend logout, clears state and redirects to login
+   * Logs out user: tells backend to clear HttpOnly cookies, clears memory and redirects
    */
   public logout(): void {
-    if (this.token()) {
-      this.http
-        .post(`${this.apiUrl}/auth/logout`, {})
-        .pipe(catchError(() => []))
-        .subscribe();
-    }
+    this.http
+      .post(
+        `${this.apiUrl}/auth/logout`,
+        {},
+        { withCredentials: true }
+      )
+      .pipe(catchError(() => []))
+      .subscribe();
 
     this.clearSession();
     this.router.navigate(['/']);
+  }
+
+  /**
+   * Helper to study cookies in client-side JavaScript.
+   * Reads a cookie value by name from document.cookie.
+   * Note: HttpOnly cookies (like fleetsphere_token) CANNOT be read by this function (by design for security).
+   * Client-accessible cookies (like fleetsphere_logged_in) CAN be read.
+   */
+  public getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+    return match ? decodeURIComponent(match[3]) : null;
+  }
+
+  /**
+   * Checks if the client-accessible logged_in cookie hint is set
+   */
+  public hasLoggedInCookie(): boolean {
+    return this.getCookie('fleetsphere_logged_in') === 'true';
   }
 
   /**
@@ -155,9 +207,9 @@ export class AuthService {
   }
 
   /**
-   * Get current auth token for interceptor
+   * Compatibility method - returns null because token is now in HttpOnly cookie
    */
   public getToken(): string | null {
-    return this.token();
+    return null;
   }
 }
